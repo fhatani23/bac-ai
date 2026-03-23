@@ -1,0 +1,453 @@
+/* =============================================================================
+   style.css — Baccarat AI Betting Advisor
+   Casino-themed dark UI with gold accents
+   ============================================================================= */
+
+/* ─── Google Fonts ─────────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+/* ─── CSS Variables ─────────────────────────────────────────────────────────── */
+:root {
+  --bg-primary:    #0a1628;
+  --bg-card:       #0d2137;
+  --bg-card-deep:  #091a2e;
+  --gold:          #c9a84c;
+  --gold-light:    #e8c96a;
+  --gold-dark:     #9a7a2e;
+  --text-primary:  #f0e6d3;
+  --text-secondary:#a0b4c8;
+  --text-muted:    #5a7a8a;
+  --banker-color:  #c9a84c;
+  --player-color:  #c0392b;
+  --tie-color:     #4a6741;
+  --green-hi:      #2ecc71;
+  --yellow-hi:     #f39c12;
+  --red-hi:        #e74c3c;
+  --border:        rgba(201, 168, 76, 0.25);
+  --radius:        12px;
+  --shadow:        0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* ─── Reset & Base ──────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* Subtle repeating diamond pattern on body */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(201,168,76,0.03) 0px,
+    rgba(201,168,76,0.03) 1px,
+    transparent 1px,
+    transparent 20px
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Layout ────────────────────────────────────────────────────────────────── */
+.container {
+  position: relative;
+  z-index: 1;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 16px 60px;
+}
+
+/* ─── Header ────────────────────────────────────────────────────────────────── */
+header {
+  text-align: center;
+  padding: 40px 0 32px;
+}
+
+header h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.8rem, 5vw, 2.8rem);
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 1px;
+  text-shadow: 0 2px 12px rgba(201,168,76,0.3);
+  margin-bottom: 8px;
+}
+
+header p.subtitle {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  font-weight: 300;
+}
+
+header .divider {
+  width: 80px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  margin: 20px auto 0;
+}
+
+/* ─── Cards ─────────────────────────────────────────────────────────────────── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 28px;
+  margin-bottom: 20px;
+}
+
+.card h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem;
+  color: var(--gold);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ─── Hands Grid ─────────────────────────────────────────────────────────────── */
+.hands-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.hand-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hand-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  min-width: 52px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.hand-group {
+  display: flex;
+  gap: 4px;
+}
+
+/* B / P / T toggle buttons */
+.hand-btn {
+  padding: 6px 14px;
+  border: 1px solid var(--text-muted);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  letter-spacing: 0.5px;
+}
+
+.hand-btn:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+/* Active states */
+.hand-btn[data-value="B"].active {
+  background: var(--gold-dark);
+  border-color: var(--gold);
+  color: #fff;
+  box-shadow: 0 0 8px rgba(201,168,76,0.4);
+}
+
+.hand-btn[data-value="P"].active {
+  background: #7b1c1c;
+  border-color: var(--player-color);
+  color: #fff;
+  box-shadow: 0 0 8px rgba(192,57,43,0.4);
+}
+
+.hand-btn[data-value="T"].active {
+  background: #2d4a2a;
+  border-color: #6aaa62;
+  color: #b8e8b4;
+}
+
+/* ─── Base Unit Input ─────────────────────────────────────────────────────────── */
+.input-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.input-row label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.input-row input[type="number"] {
+  background: var(--bg-card-deep);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 8px 14px;
+  width: 120px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.input-row input[type="number"]:focus {
+  border-color: var(--gold);
+}
+
+/* ─── Buttons ─────────────────────────────────────────────────────────────────── */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+  border: none;
+  border-radius: 8px;
+  color: #0a1628;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 12px 28px;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  box-shadow: 0 4px 16px rgba(201,168,76,0.4);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 1px solid var(--text-muted);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 10px 22px;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.btn-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* ─── Error Message ─────────────────────────────────────────────────────────── */
+#errorMsg {
+  display: none;
+  background: rgba(231,76,60,0.12);
+  border: 1px solid rgba(231,76,60,0.4);
+  border-radius: 8px;
+  color: #e87c70;
+  font-size: 0.88rem;
+  margin-top: 14px;
+  padding: 10px 16px;
+}
+
+/* ─── Results Panel ──────────────────────────────────────────────────────────── */
+#resultsPanel {
+  display: none;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+#resultsPanel.visible {
+  display: block;
+  animation: fadeSlideIn 0.4s ease forwards;
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Suggested Bet big display */
+.bet-hero {
+  text-align: center;
+  padding: 20px 0 16px;
+}
+
+.bet-hero .bet-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-bottom: 8px;
+}
+
+.bet-hero .bet-value {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 6vw, 3.2rem);
+  font-weight: 700;
+  color: var(--gold);
+  text-shadow: 0 0 20px rgba(201,168,76,0.5);
+  letter-spacing: 2px;
+}
+
+/* Results grid */
+.results-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+@media (max-width: 560px) {
+  .results-grid { grid-template-columns: 1fr; }
+}
+
+.result-item {
+  background: var(--bg-card-deep);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.result-item.full-width {
+  grid-column: 1 / -1;
+}
+
+.result-item .ri-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 6px;
+}
+
+.result-item .ri-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.result-item .ri-sub {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* ─── Confidence Bar ─────────────────────────────────────────────────────────── */
+.confidence-bar-bg {
+  background: rgba(255,255,255,0.08);
+  border-radius: 999px;
+  height: 10px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.confidence-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.6s ease;
+  width: 0%;
+}
+
+.confidence-fill.high   { background: linear-gradient(90deg, #27ae60, var(--green-hi)); }
+.confidence-fill.medium { background: linear-gradient(90deg, #d68910, var(--yellow-hi)); }
+.confidence-fill.low    { background: linear-gradient(90deg, #c0392b, var(--red-hi)); }
+
+/* ─── Pattern Badge ──────────────────────────────────────────────────────────── */
+.pattern-badge {
+  display: inline-block;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 4px 14px;
+  margin-top: 6px;
+  letter-spacing: 0.5px;
+}
+
+.badge-banker  { background: rgba(201,168,76,0.15);  color: var(--gold);         border: 1px solid var(--gold-dark); }
+.badge-player  { background: rgba(192,57,43,0.15);   color: #e87c70;             border: 1px solid #7b2c2c; }
+.badge-chop    { background: rgba(52,152,219,0.15);  color: #7ec8e3;             border: 1px solid #2a6a8a; }
+.badge-neutral { background: rgba(255,255,255,0.05); color: var(--text-secondary);border: 1px solid var(--text-muted); }
+
+/* ─── Paroli Info ─────────────────────────────────────────────────────────────── */
+.paroli-info {
+  background: var(--bg-card-deep);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 10px 10px 0;
+  padding: 14px 18px;
+  margin-top: 16px;
+}
+
+.paroli-info .pi-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.9rem;
+  color: var(--gold);
+  margin-bottom: 6px;
+}
+
+.paroli-info .pi-row {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-top: 3px;
+}
+
+/* ─── Payout Preview ─────────────────────────────────────────────────────────── */
+#payoutPreview {
+  font-size: 0.85rem;
+  color: var(--green-hi);
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+/* ─── Disclaimer ─────────────────────────────────────────────────────────────── */
+.disclaimer {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  padding: 24px 0 8px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  margin-top: 32px;
+}
+
+/* ─── Scrollbar ─────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 3px; }

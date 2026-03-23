@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🃏 Baccarat AI Betting Advisor</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ── Header ──────────────────────────────────────────────────────────── -->
+  <header>
+    <h1>🃏 Baccarat AI Betting Advisor</h1>
+    <p class="subtitle">Banker-Only Strategy | Paroli System</p>
+    <div class="divider"></div>
+  </header>
+
+  <!-- ── Hand Input ───────────────────────────────────────────────────────── -->
+  <section class="card" aria-label="Hand Input">
+    <h2>🎴 Enter Last 10 Hands</h2>
+
+    <div class="hands-grid" id="handsContainer">
+
+      <!-- Hand 1 -->
+      <div class="hand-row">
+        <span class="hand-label">Hand 1</span>
+        <div class="hand-group" role="group" aria-label="Hand 1 result">
+          <button class="hand-btn" data-value="B" aria-pressed="false">B</button>
+          <button class="hand-btn" data-value="P" aria-pressed="false">P</button>
+          <button class="hand-btn" data-value="T" aria-pressed="false">T</button>
+        </div>
+      </div>
+
+      <!-- Hand 2 -->
+      <div class="hand-row">
+        <span class="hand-label">Hand 2</span>
+        <div class="hand-group" role="group" aria-label="Hand 2 result">
+          <button class="hand-btn" data-value="B" aria-pressed="false">B</button>
+          <button class="hand-btn" data-value="P" aria-pressed="false">P</button>
+          <button class="hand-btn" data-value="T" aria-pressed="false">T</button>
+        </div>
+      </div>
+
+      <!-- Hand 3 -->
+      <div class="hand-row">
+        <span class="hand-label">Hand 3</span>
+        <div class="hand-group" role="group" aria-label="Hand 3 result">
+          <button class="hand-btn" data-value="B" aria-pressed="false">B</button>
+          <button class="hand-btn" data-value="P" aria-pressed="false">P</button>
+          <button class="hand-btn" data-value="T" aria-pressed="false">T</button>
+        </div>
+      </div>
+
+      <!-- Hand 4 -->
+      <div class="hand-row">
+        <span class="hand-label">Hand 4</span>
+        <div class="hand-group" role="group" aria-label="Hand 4 result">
+          <button class="hand-btn" data-value="B" aria-pressed="false">B</button>
+          <button class="hand-btn" data-value="P" aria-pressed="false">P</button>
+          <button class="hand-btn" data-value="T" aria-pressed="false">T</button>
+        </div>
+      </div>
+
+      <!-- Hand 5 -->
+      <div class="hand-row">
+        <span class="hand-label">Hand 5</span>
+        <div class="hand-group" role="group" aria-label="Hand 5 result">
+          <button class="hand-btn" data-value="B" aria-pressed="false">B</button>
+          <button class="hand-btn" data-value="P" aria-pressed="false">P</button>
+          <button class="hand-btn" data-value="T" aria-pressed="false">T</button>
+        </div>
+      </div>
+
+      <!-- Hand 6 -->
+      <div class="hand-row">
+        <span class="hand-label">Hand 6</span>
+        <div class="hand-group" role="group" aria-label="Hand 6 result">
+          <button class="hand-btn" data-value="B" aria-pressed="false">B</button>
+          <button class="hand-btn" data-value="P" aria-pressed="false">P</button>
+          <button class="hand-btn" data-value="T" aria-pressed="false">T</button>
+        </div>
+      </div>
+
+      <!-- Hand 7 -->
+      <div class="hand-row">
+        <span class="hand-label">Hand 7</span>
+        <div class="hand-group" role="group" aria-label="Hand 7 result">
+          <button class="hand-btn" data-value="B" aria-pressed="false">B</button>
+          <button class="hand-btn" data-value="P" aria-pressed="false">P</button>
+          <button class="hand-btn" data-value="T" aria-pressed="false">T</button>
+        </div>
+      </div>
+
+      <!-- Hand 8 -->
+      <div class="hand-row">
+        <span class="hand-label">Hand 8</span>
+        <div class="hand-group" role="group" aria-label="Hand 8 result">
+          <button class="hand-btn" data-value="B" aria-pressed="false">B</button>
+          <button class="hand-btn" data-value="P" aria-pressed="false">P</button>
+          <button class="hand-btn" data-value="T" aria-pressed="false">T</button>
+        </div>
+      </div>
+
+      <!-- Hand 9 -->
+      <div class="hand-row">
+        <span class="hand-label">Hand 9</span>
+        <div class="hand-group" role="group" aria-label="Hand 9 result">
+          <button class="hand-btn" data-value="B" aria-pressed="false">B</button>
+          <button class="hand-btn" data-value="P" aria-pressed="false">P</button>
+          <button class="hand-btn" data-value="T" aria-pressed="false">T</button>
+        </div>
+      </div>
+
+      <!-- Hand 10 -->
+      <div class="hand-row">
+        <span class="hand-label">Hand 10</span>
+        <div class="hand-group" role="group" aria-label="Hand 10 result">
+          <button class="hand-btn" data-value="B" aria-pressed="false">B</button>
+          <button class="hand-btn" data-value="P" aria-pressed="false">P</button>
+          <button class="hand-btn" data-value="T" aria-pressed="false">T</button>
+        </div>
+      </div>
+
+    </div><!-- /.hands-grid -->
+  </section>
+
+  <!-- ── Settings ─────────────────────────────────────────────────────────── -->
+  <section class="card" aria-label="Bet Settings">
+    <h2>⚙️ Bet Settings</h2>
+    <div class="input-row">
+      <label for="baseUnit">Base Unit ($):</label>
+      <input
+        type="number"
+        id="baseUnit"
+        value="10"
+        min="1"
+        step="1"
+        aria-label="Base unit bet amount in dollars"
+      />
+    </div>
+  </section>
+
+  <!-- ── Actions ──────────────────────────────────────────────────────────── -->
+  <div class="btn-row">
+    <button class="btn-primary" id="analyzeBtn">
+      🔍 Analyze &amp; Suggest Next Bet
+    </button>
+    <button class="btn-secondary" id="resetBtn">
+      🔄 Reset
+    </button>
+  </div>
+
+  <!-- Error message -->
+  <div id="errorMsg" role="alert"></div>
+
+  <!-- ── Results Panel ─────────────────────────────────────────────────────── -->
+  <section id="resultsPanel" class="card" aria-live="polite" aria-label="Analysis Results">
+    <h2>📊 AI Analysis Results</h2>
+
+    <!-- Hero: Suggested Bet -->
+    <div class="bet-hero">
+      <div class="bet-label">🎯 Suggested Bet</div>
+      <div class="bet-value" id="suggestedBet">—</div>
+    </div>
+
+    <!-- Results grid -->
+    <div class="results-grid">
+
+      <!-- Bet Amount -->
+      <div class="result-item">
+        <div class="ri-label">💰 Recommended Bet Size</div>
+        <div class="ri-value" id="betAmount">—</div>
+        <div class="ri-sub" id="paroliStage"></div>
+        <div class="ri-sub" id="payoutPreview"></div>
+      </div>
+
+      <!-- Confidence -->
+      <div class="result-item">
+        <div class="ri-label">📊 Confidence Level</div>
+        <div class="ri-value" id="confidenceText">—</div>
+        <div class="confidence-bar-bg">
+          <div class="confidence-fill" id="confidenceBar"></div>
+        </div>
+      </div>
+
+      <!-- Pattern -->
+      <div class="result-item">
+        <div class="ri-label">📈 Pattern Detected</div>
+        <div>
+          <span class="pattern-badge" id="patternBadge">—</span>
+        </div>
+      </div>
+
+      <!-- Paroli Info -->
+      <div class="result-item">
+        <div class="ri-label">🎲 Paroli System</div>
+        <div class="ri-sub" id="nextStagePreview"></div>
+      </div>
+
+      <!-- Reasoning (full width) -->
+      <div class="result-item full-width">
+        <div class="ri-label">📋 Reasoning</div>
+        <p id="reasoning" style="margin-top:6px; font-size:0.92rem; color:var(--text-primary);">—</p>
+      </div>
+
+    </div><!-- /.results-grid -->
+  </section>
+
+  <!-- ── Disclaimer ────────────────────────────────────────────────────────── -->
+  <footer class="disclaimer">
+    ⚠️ For entertainment purposes only. No betting system guarantees profit.<br />
+    Please gamble responsibly. If gambling becomes a problem, seek help.
+  </footer>
+
+</div><!-- /.container -->
+
+<!-- Scripts: load engines first, then main app -->
+<script src="ai_engine.js"></script>
+<script src="paroli.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>
