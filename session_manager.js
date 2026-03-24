@@ -3,7 +3,7 @@
  *
  * Manages the rolling prediction loop after the initial 10-hand setup:
  *   • Rolling 10-hand window used for each new AI prediction
- *   • Always bets Banker; result is correct if Banker wins, wrong if Player wins, push on Tie
+ *   • Follows AI suggestion (Banker OR Player); result is correct if actual matches prediction, push on Tie
  *   • Tracks consecutive losses; disables play after 7 in a row
  *   • Money management bet sizing derived from the chosen strategy
  */
@@ -37,10 +37,10 @@ export class SessionManager {
     /** Total live-play hands entered (includes ties). */
     this.totalHands = 0;
 
-    /** How many times Banker won (correct predictions). */
+    /** How many times the AI prediction was correct. */
     this.correctPredictions = 0;
 
-    /** Consecutive losses since last Banker win. */
+    /** Consecutive losses since last correct prediction. */
     this.consecutiveLosses = 0;
 
     /** Whether the session has been started. */
@@ -48,6 +48,12 @@ export class SessionManager {
 
     /** false once 7 consecutive losses are reached; re-enabled by resetShoe(). */
     this.shoeActive = true;
+
+    /** The most recent AI prediction outcome: "B" or "P". Set in makePrediction(). */
+    this.lastPrediction = null;
+
+    /** Whether the AI flagged low confidence (skip or min bet). Set in makePrediction(). */
+    this._lastSkipBet = false;
   }
 
   // ---------------------------------------------------------------------------
@@ -70,27 +76,37 @@ export class SessionManager {
 
   /**
    * Generate the next AI prediction using the rolling 10-hand window.
-   * Always predicts Banker — consistent with the banker-only strategy.
+   * Follows the AI's trend-based suggestion (Banker or Player).
    *
    * @returns {{
    *   predictedOutcome: string,
    *   confidence: number,
    *   pattern: string,
    *   reasoning: string,
-   *   betAmount: number
+   *   betAmount: number,
+   *   skipBet: boolean,
+   *   alternativeAction: string
    * }}
    */
   makePrediction() {
     const last10 = this.getLastTenHands();
     const aiResult = analyzeHands(last10);
+
+    this._lastSkipBet = aiResult.skipBet || false;
+
+    const predictedOutcome = aiResult.suggestion === "Banker" ? "B" : "P";
+    this.lastPrediction = predictedOutcome;
+
     const betAmount = this._computeBetAmount();
 
     return {
-      predictedOutcome: "B",
+      predictedOutcome,
       confidence: aiResult.confidence,
       pattern: aiResult.pattern,
       reasoning: aiResult.reasoning,
       betAmount,
+      skipBet: aiResult.skipBet,
+      alternativeAction: aiResult.alternativeAction,
     };
   }
 
@@ -99,9 +115,9 @@ export class SessionManager {
    * a summary of the outcome.
    *
    * Rules:
-   *  - "B" (Banker wins)  → correct prediction: reset consecutiveLosses, +1 correctPredictions
-   *  - "P" (Player wins)  → wrong prediction:   +1 consecutiveLosses; stop shoe at 7
-   *  - "T" (Tie / push)   → no effect on win/loss counters
+   *  - actual === lastPrediction → correct prediction: reset consecutiveLosses, +1 correctPredictions
+   *  - actual !== lastPrediction (and not Tie) → wrong prediction: +1 consecutiveLosses; stop shoe at 7
+   *  - "T" (Tie / push) → no effect on win/loss counters
    *
    * @param {string} actual - "B", "P", or "T"
    * @returns {{
@@ -122,18 +138,19 @@ export class SessionManager {
     // null = push (Tie); true = win; false = loss
     let correct = null;
 
-    if (actual === "B") {
+    if (actual === "T") {
+      // Tie is always a push — no effect on streak or win/loss counts
+    } else if (actual === this.lastPrediction) {
       correct = true;
       this.consecutiveLosses = 0;
       this.correctPredictions++;
-    } else if (actual === "P") {
+    } else {
       correct = false;
       this.consecutiveLosses++;
       if (this.consecutiveLosses >= 7) {
         this.shoeActive = false;
       }
     }
-    // Tie: correct stays null, no streak changes
 
     // Append to rolling history (drives future predictions)
     this.hands.push(actual);
@@ -141,7 +158,7 @@ export class SessionManager {
     // Log for scoreboard
     this.predictions.push({
       handNumber: this.hands.length, // e.g. 11 for first live-play hand after 10 training hands
-      predicted: "B",
+      predicted: this.lastPrediction,
       actual,
       correct,
       betAmount,
@@ -212,6 +229,8 @@ export class SessionManager {
     this.correctPredictions = 0;
     this.sessionActive = true;
     this.shoeActive = true;
+    this.lastPrediction = null;
+    this._lastSkipBet = false;
   }
 
   // ---------------------------------------------------------------------------
@@ -220,32 +239,36 @@ export class SessionManager {
 
   /**
    * Compute the bet amount for the current strategy based on the rolling
-   * hands history.  Mirror of the helper functions in app.js so that the
-   * SessionManager is self-contained.
+   * prediction history.  Uses the win/loss record rather than raw B/P outcomes
+   * so that the strategy responds to whether the AI prediction was correct,
+   * regardless of which side (Banker or Player) was predicted.
+   *
+   * When `skipBet` is flagged (low confidence), always returns `baseUnit`.
    *
    * @returns {number} Bet amount in dollars
    */
   _computeBetAmount() {
-    const hands = this.hands;
+    if (this._lastSkipBet) return this.baseUnit;
+    const preds = this.predictions;
     switch (this.strategy) {
       case "paroli": {
-        const winStreak = _trailingBankerWins(hands);
+        const winStreak = _trailingWins(preds);
         return getParoliBet(winStreak, this.baseUnit).betAmount;
       }
       case "martingale": {
-        const lossStreak = _trailingLosses(hands);
+        const lossStreak = _trailingLosses(preds);
         return getMartingaleBet(lossStreak, this.baseUnit).betAmount;
       }
       case "fibonacci": {
-        const lossStreak = _trailingLosses(hands);
+        const lossStreak = _trailingLosses(preds);
         return getFibonacciBet(lossStreak, this.baseUnit).betAmount;
       }
       case "1-3-2-6": {
-        const winStreak = _trailingBankerWins(hands);
+        const winStreak = _trailingWins(preds);
         return getOneThreeTwoSixBet(winStreak, this.baseUnit).betAmount;
       }
       case "dalembert": {
-        const netLosses = _calcNetLosses(hands);
+        const netLosses = _calcNetLosses(preds);
         return getDalembertBet(netLosses, this.baseUnit).betAmount;
       }
       default:
@@ -258,36 +281,35 @@ export class SessionManager {
 // Module-level helpers (not exported)
 // ---------------------------------------------------------------------------
 
-/** Count trailing consecutive Banker wins, skipping Ties. */
-function _trailingBankerWins(hands) {
+/** Count trailing consecutive correct predictions (wins), skipping Ties (null). */
+function _trailingWins(predictions) {
   let count = 0;
-  for (let i = hands.length - 1; i >= 0; i--) {
-    if (hands[i] === "T") continue; // Ties don't break or count streaks
-    if (hands[i] === "B") count++;
+  for (let i = predictions.length - 1; i >= 0; i--) {
+    if (predictions[i].correct === null) continue; // Ties don't break streaks
+    if (predictions[i].correct === true) count++;
     else break;
   }
   return count;
 }
 
-/** Count trailing consecutive non-Banker results (losses when betting Banker), skipping Ties. */
-function _trailingLosses(hands) {
+/** Count trailing consecutive wrong predictions (losses), skipping Ties (null). */
+function _trailingLosses(predictions) {
   let count = 0;
-  for (let i = hands.length - 1; i >= 0; i--) {
-    if (hands[i] === "T") continue; // Ties are pushes, not losses
-    if (hands[i] !== "B") count++;
+  for (let i = predictions.length - 1; i >= 0; i--) {
+    if (predictions[i].correct === null) continue; // Ties are pushes, not losses
+    if (predictions[i].correct === false) count++;
     else break;
   }
   return count;
 }
 
-/** Net losses = Player count − Banker count across all hands, clamped to 0. */
-function _calcNetLosses(hands) {
+/** Net losses = total losses − total wins across all predictions, clamped to 0. */
+function _calcNetLosses(predictions) {
   let losses = 0;
   let wins = 0;
-  hands.forEach((h) => {
-    if (h === "B") wins++;
-    else if (h === "P") losses++;
-    // Ties ignored
+  predictions.forEach((p) => {
+    if (p.correct === true) wins++;
+    else if (p.correct === false) losses++;
   });
   return Math.max(0, losses - wins);
 }

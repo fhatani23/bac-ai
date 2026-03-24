@@ -448,6 +448,20 @@ footer {
   font-weight: 700;
 }
 
+/* Dynamic bet label variants (replaces the hardcoded .bet-banker in the prediction card) */
+.pred-bet-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.pred-bet-value.banker {
+  color: #c9a84c;   /* gold for Banker */
+}
+
+.pred-bet-value.player {
+  color: #e74c3c;   /* red for Player */
+}
+
 .pred-pattern {
   color: var(--gold-light);
   font-size: 0.88rem;
@@ -477,6 +491,17 @@ footer {
   background: rgba(0, 0, 0, 0.2);
   padding: 10px 12px;
   border-radius: 6px;
+}
+
+.skip-bet-advisory {
+  margin-top: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ff9800;
+  background: rgba(255, 152, 0, 0.1);
+  border-left: 3px solid #ff9800;
+  padding: 8px 12px;
+  border-radius: 0 6px 6px 0;
 }
 
 /* --------------------------------------------------------------------------

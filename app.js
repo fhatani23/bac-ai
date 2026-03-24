@@ -197,7 +197,7 @@ function renderNextPrediction() {
 
 /**
  * Render the AI prediction card content.
- * @param {{ predictedOutcome: string, confidence: number, pattern: string, reasoning: string, betAmount: number }} prediction
+ * @param {{ predictedOutcome: string, confidence: number, pattern: string, reasoning: string, betAmount: number, skipBet: boolean, alternativeAction: string }} prediction
  */
 function renderPredictionCard(prediction) {
   const strategy = session.strategy;
@@ -212,6 +212,15 @@ function renderPredictionCard(prediction) {
   // Confidence bar fill (clamped 0–100)
   const barFill = Math.min(100, Math.max(0, prediction.confidence));
 
+  const isBanker = prediction.predictedOutcome === "B";
+  const betIcon  = isBanker ? "🏦" : "👤";
+  const betName  = isBanker ? "BANKER" : "PLAYER";
+  const betClass = isBanker ? "pred-bet-value banker" : "pred-bet-value player";
+
+  const skipBetAdvisory = prediction.skipBet
+    ? `<div class="skip-bet-advisory">⚠️ Low confidence — minimum bet applied automatically. ${prediction.alternativeAction || ""}</div>`
+    : "";
+
   predictionCard.innerHTML = `
     <div class="pred-header">
       <span class="pred-icon">🤖</span>
@@ -220,13 +229,13 @@ function renderPredictionCard(prediction) {
 
     <div class="pred-row">
       <span class="pred-label">Bet</span>
-      <span class="pred-value bet-banker">🏦 BANKER</span>
+      <span class="${betClass}">${betIcon} ${betName}</span>
     </div>
 
     <div class="pred-row">
       <span class="pred-label">Bet Size</span>
       <span class="pred-value highlight">$${prediction.betAmount.toFixed(2)}
-        <em class="strat-tag">(${stratName})</em>
+        <em class="strat-tag">(${prediction.skipBet ? "min — low confidence ⚠️" : stratName})</em>
       </span>
     </div>
 
@@ -244,6 +253,7 @@ function renderPredictionCard(prediction) {
     </div>
 
     <div class="pred-reasoning">${prediction.reasoning}</div>
+    ${skipBetAdvisory}
   `;
 }
 
@@ -273,10 +283,11 @@ function addScoreboardRow(outcome) {
   }
 
   const actualLabel = record.actual === "B" ? "B" : record.actual === "P" ? "P" : "T";
+  const predictedLabel = record.predicted === "B" ? "B" : "P";
 
   row.innerHTML = `
     <td>${record.handNumber}</td>
-    <td>B</td>
+    <td>${predictedLabel}</td>
     <td>${actualLabel}</td>
     <td class="${resultClass}">${resultIcon}</td>
     <td>$${record.betAmount.toFixed(2)}</td>

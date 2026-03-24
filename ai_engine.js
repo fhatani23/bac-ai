@@ -1,93 +1,114 @@
 /**
  * AI Pattern Analysis Engine for Baccarat
  * Analyzes the last 10 hands to detect trends, streaks, and chop patterns,
- * then produces a confidence-weighted suggestion.
+ * then produces a trend-following suggestion (Banker or Player).
  */
 
 /**
- * Analyze 10 baccarat hands and produce an AI betting suggestion.
+ * Analyze up to 10 baccarat hands and produce an AI betting suggestion.
+ * Follows the detected trend — streak continuation or chop continuation —
+ * rather than defaulting to Banker regardless of pattern.
  *
- * @param {string[]} hands - Array of up to 10 results, each "B" (Banker), "P" (Player), or "T" (Tie)
+ * @param {string[]} hands - Array of up to 10 results: "B", "P", or "T"
  * @returns {{
- *   suggestion: string,       // "Banker" (always Banker-only mode)
- *   confidence: number,       // 0–100 confidence score
- *   pattern: string,          // Human-readable pattern description
- *   reasoning: string,        // Explanation of the recommendation
+ *   suggestion: string,          // "Banker" | "Player"
+ *   confidence: number,          // 0–100
+ *   pattern: string,
+ *   reasoning: string,
  *   bankerCount: number,
  *   playerCount: number,
- *   tieCount: number
+ *   tieCount: number,
+ *   skipBet: boolean,
+ *   alternativeAction: string,
+ *   secondOpinion: null
  * }}
  */
 export function analyzeHands(hands) {
-  // Filter out Ties for streak analysis (Ties are traditionally ignored in progression)
-  const relevant = hands.filter((h) => h === "B" || h === "P");
+  const relevant = hands.filter(h => h === "B" || h === "P");
+  const bankerCount = hands.filter(h => h === "B").length;
+  const playerCount = hands.filter(h => h === "P").length;
+  const tieCount    = hands.filter(h => h === "T").length;
 
-  const bankerCount = hands.filter((h) => h === "B").length;
-  const playerCount = hands.filter((h) => h === "P").length;
-  const tieCount = hands.filter((h) => h === "T").length;
-
-  // --- Pattern Detection ---
-
-  // 1. Trailing streak (most recent consecutive same result)
   const trailingStreak = getTrailingStreak(relevant);
+  const chopScore      = getChopScore(relevant);
+  const recencyScore   = getRecencyScore(hands);  // 0–1, higher = more Banker recently
 
-  // 2. Alternating / chop pattern score (how often results alternate)
-  const chopScore = getChopScore(relevant);
-
-  // 3. Recency-weighted Banker frequency (recent hands count more)
-  const recencyScore = getRecencyScore(hands);
-
-  // --- Confidence Calculation ---
-  // Base confidence starts at 50% (coin flip without data)
+  let suggestion = "Banker";  // default
   let confidence = 50;
-  let pattern = "Neutral — no strong pattern detected.";
-  let reasoning = "The AI recommends Banker as it carries the lowest house edge (~1.06%).";
+  let pattern    = "Neutral — no strong pattern detected.";
+  let reasoning  = "No dominant pattern in the last 10 hands. Defaulting to Banker (lowest house edge).";
+  let alternativeAction = "Standard bet.";
+  let skipBet = false;
 
   if (relevant.length === 0) {
-    // No non-tie data at all
+    suggestion = "Banker";
     confidence = 51;
-    pattern = "No data — defaulting to Banker (lowest house edge).";
-    reasoning = "With no usable hand history, Banker is the statistically safest bet.";
-  } else if (trailingStreak.count >= 3 && trailingStreak.result === "B") {
-    // Strong Banker streak
-    confidence = Math.min(85, 60 + trailingStreak.count * 5);
-    pattern = `Banker streak of ${trailingStreak.count} — momentum favors Banker.`;
-    reasoning = `A streak of ${trailingStreak.count} consecutive Banker wins has been detected. Streaks tend to continue short-term in baccarat shoes.`;
-  } else if (trailingStreak.count >= 3 && trailingStreak.result === "P") {
-    // Player streak — still suggest Banker but lower confidence
-    confidence = 52;
-    pattern = `Player streak of ${trailingStreak.count} — streak may continue but Banker edge applies.`;
-    reasoning = `A Player streak is active. The AI still recommends Banker due to its mathematical edge, but confidence is lower.`;
-  } else if (chopScore >= 0.6) {
-    // Choppy / alternating shoe
-    confidence = 57;
-    pattern = `Choppy shoe (${Math.round(chopScore * 100)}% alternating) — unpredictable but Banker edge holds.`;
-    reasoning = "The shoe is showing an alternating pattern. Banker is still preferred due to its built-in statistical advantage.";
+    pattern = "No data — defaulting to Banker.";
+    reasoning = "No non-tie hands available. Banker has the best statistical edge by default.";
+    alternativeAction = "Bet minimum unit.";
+
+  } else if (trailingStreak.count >= 3) {
+    // ── STREAK PATTERN ──
+    // Follow the streak: predict continuation of whichever side is streaking
+    suggestion = trailingStreak.result === "B" ? "Banker" : "Player";
+    confidence = Math.min(88, 58 + trailingStreak.count * 5);
+    const sideName = suggestion === "Banker" ? "Banker" : "Player";
+    pattern = `${sideName} streak of ${trailingStreak.count} — follow the streak.`;
+    reasoning = `${trailingStreak.count} consecutive ${sideName} wins detected. Trend-following strategy predicts continuation. Bet ${sideName}.`;
+    alternativeAction = `Bet ${sideName} — streak momentum.`;
+
+  } else if (chopScore >= 0.6 && relevant.length >= 4) {
+    // ── CHOP PATTERN ──
+    // Follow the chop: predict the opposite of the last result
+    const lastResult = relevant[relevant.length - 1];
+    suggestion = lastResult === "B" ? "Player" : "Banker";
+    confidence = Math.min(78, 50 + Math.round(chopScore * 40));
+    const oppName = suggestion === "Banker" ? "Banker" : "Player";
+    pattern = `Chop pattern (${Math.round(chopScore * 100)}% alternating) — follow the chop.`;
+    reasoning = `The shoe is alternating heavily. Last result was ${lastResult === "B" ? "Banker" : "Player"}, so chop continuation predicts ${oppName}. Bet ${oppName}.`;
+    alternativeAction = `Bet ${oppName} — chop continuation.`;
+
   } else if (recencyScore > 0.65) {
     // Recent Banker dominance
-    confidence = Math.min(80, 55 + Math.round(recencyScore * 30));
+    suggestion = "Banker";
+    confidence = Math.min(75, 52 + Math.round(recencyScore * 28));
     pattern = `Recent Banker dominance (recency score: ${Math.round(recencyScore * 100)}%).`;
-    reasoning = "Recent hands are heavily weighted toward Banker outcomes, reinforcing the standard recommendation.";
+    reasoning = "Recent hands are skewed toward Banker. Recency-weighted analysis favors Banker.";
+    alternativeAction = "Full bet — favorable conditions.";
+
   } else if (recencyScore < 0.35) {
     // Recent Player dominance
-    confidence = 53;
-    pattern = `Recent Player dominance — Banker edge still applies mathematically.`;
-    reasoning = "Player has been winning recently, but the house edge still favors Banker over time.";
+    suggestion = "Player";
+    confidence = Math.min(72, 50 + Math.round((0.5 - recencyScore) * 56));
+    pattern = `Recent Player dominance (recency score: ${Math.round(recencyScore * 100)}%).`;
+    reasoning = "Recent hands are skewed toward Player. Recency-weighted analysis favors Player.";
+    alternativeAction = "Full bet — Player dominant recently.";
+
   } else {
-    // Balanced shoe
-    confidence = 58;
-    pattern = "Balanced shoe — Banker and Player results are even.";
-    reasoning = "No strong trend detected. Banker remains the recommended bet based on its lower house edge.";
+    // Balanced / no pattern
+    suggestion = "Banker";
+    confidence = 55;
+    pattern = "Balanced shoe — no dominant pattern.";
+    reasoning = "No strong trend detected. Defaulting to Banker for its statistical edge (~1.06% house edge advantage).";
+    alternativeAction = "Standard bet.";
   }
 
+  // skipBet only when truly uncertain (confidence too low to justify a bet).
+  // Current confidence floor is 50; this threshold acts as a safety net for
+  // edge cases or future logic paths that may produce lower confidence values.
+  skipBet = confidence < 45;
+
   return {
-    suggestion: "Banker",
+    suggestion,
     confidence,
     pattern,
     reasoning,
     bankerCount,
     playerCount,
     tieCount,
+    skipBet,
+    alternativeAction,
+    secondOpinion: null,
   };
 }
 
