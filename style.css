@@ -349,3 +349,410 @@ footer {
   color: var(--text-dim);
   font-size: 0.78rem;
 }
+
+/* ==========================================================================
+   LIVE PLAY MODE — Phase 2 styles
+   ========================================================================== */
+
+/* #live-play section inherits the dark casino theme from .container */
+#live-play {
+  padding-top: 4px;
+}
+
+/* --------------------------------------------------------------------------
+   Live Play Header Bar
+   -------------------------------------------------------------------------- */
+.live-play-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.live-play-header span {
+  font-size: 1.6rem;
+}
+
+.live-play-header h2 {
+  color: var(--gold);
+  font-size: 1.15rem;
+  letter-spacing: 0.5px;
+}
+
+/* --------------------------------------------------------------------------
+   Prediction Card
+   -------------------------------------------------------------------------- */
+.prediction-card {
+  border-color: var(--gold) !important;
+  box-shadow: 0 0 24px rgba(212, 175, 55, 0.2) !important;
+}
+
+.pred-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.pred-icon {
+  font-size: 1.5rem;
+}
+
+.pred-header h3 {
+  color: var(--gold);
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.pred-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(46, 82, 54, 0.4);
+  gap: 8px;
+}
+
+.pred-row:last-of-type {
+  border-bottom: none;
+}
+
+.pred-label {
+  color: var(--text-muted);
+  font-size: 0.87rem;
+  flex-shrink: 0;
+}
+
+.pred-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: right;
+}
+
+.pred-value.highlight {
+  color: var(--gold);
+  font-size: 1.1rem;
+}
+
+.pred-value .strat-tag {
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: var(--text-muted);
+  font-style: normal;
+}
+
+.bet-banker {
+  color: var(--green-bright);
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.pred-pattern {
+  color: var(--gold-light);
+  font-size: 0.88rem;
+  text-align: right;
+}
+
+/* Confidence progress bar */
+.confidence-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  margin: 4px 0 8px;
+  overflow: hidden;
+}
+
+.confidence-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.pred-reasoning {
+  margin-top: 10px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 10px 12px;
+  border-radius: 6px;
+}
+
+/* --------------------------------------------------------------------------
+   Result Entry Buttons
+   -------------------------------------------------------------------------- */
+.result-entry h3 {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 14px;
+}
+
+.result-btns {
+  display: flex;
+  gap: 12px;
+}
+
+.result-btn {
+  flex: 1;
+  min-height: 80px;
+  font-size: 1rem;
+  font-weight: 700;
+  border: 2px solid transparent;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+  letter-spacing: 0.3px;
+}
+
+.result-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.result-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.result-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.banker-btn {
+  background: linear-gradient(135deg, var(--green-mid), var(--green-bright));
+  color: #fff;
+  border-color: var(--green-bright);
+}
+
+.player-btn {
+  background: linear-gradient(135deg, #8b0000, var(--red-accent));
+  color: #fff;
+  border-color: var(--red-accent);
+}
+
+.tie-btn {
+  background: linear-gradient(135deg, #3a3a18, #5a5a28);
+  color: var(--gold-light);
+  border-color: #6a6a30;
+}
+
+@media (max-width: 480px) {
+  .result-btns {
+    flex-direction: column;
+  }
+  .result-btn {
+    min-height: 60px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Loss Warning Bar
+   -------------------------------------------------------------------------- */
+.loss-warning {
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  font-weight: 600;
+  font-size: 0.92rem;
+  margin-bottom: 16px;
+  border-left: 4px solid;
+}
+
+.loss-yellow {
+  background: rgba(255, 214, 0, 0.12);
+  border-color: #ffd600;
+  color: #ffd600;
+}
+
+.loss-orange {
+  background: rgba(255, 111, 0, 0.12);
+  border-color: #ff6f00;
+  color: #ff9800;
+}
+
+.loss-red {
+  background: rgba(198, 40, 40, 0.18);
+  border-color: var(--red-accent);
+  color: #ef5350;
+}
+
+/* --------------------------------------------------------------------------
+   STOP Banner
+   -------------------------------------------------------------------------- */
+.stop-banner {
+  background: rgba(180, 0, 0, 0.22);
+  border: 2px solid var(--red-accent);
+  border-radius: var(--radius);
+  margin-bottom: 20px;
+  animation: pulse-border 1.2s ease-in-out infinite;
+  overflow: hidden;
+}
+
+@keyframes pulse-border {
+  0%,
+  100% {
+    border-color: var(--red-accent);
+    box-shadow: 0 0 8px rgba(198, 40, 40, 0.4);
+  }
+  50% {
+    border-color: #ff5252;
+    box-shadow: 0 0 20px rgba(255, 82, 82, 0.7);
+  }
+}
+
+.stop-banner-inner {
+  padding: 24px;
+  text-align: center;
+}
+
+.stop-banner-inner h2 {
+  color: #ff5252;
+  font-size: 1.4rem;
+  margin-bottom: 8px;
+}
+
+.stop-banner-inner p {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  margin-bottom: 18px;
+}
+
+.stop-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* --------------------------------------------------------------------------
+   Live Play Control Buttons (New Shoe / Full Reset)
+   -------------------------------------------------------------------------- */
+.btn-new-shoe,
+.btn-full-reset {
+  padding: 11px 22px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  letter-spacing: 0.3px;
+}
+
+.btn-new-shoe {
+  background: linear-gradient(135deg, var(--green-mid), var(--green-bright));
+  color: #fff;
+  box-shadow: 0 3px 12px rgba(76, 175, 80, 0.3);
+}
+
+.btn-full-reset {
+  background: linear-gradient(135deg, #3a1010, #6a1a1a);
+  color: #ffb3b3;
+  border: 1px solid var(--red-accent);
+}
+
+.btn-new-shoe:hover,
+.btn-full-reset:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 16px rgba(0, 0, 0, 0.4);
+}
+
+.btn-new-shoe:active,
+.btn-full-reset:active {
+  transform: translateY(0);
+}
+
+.live-play-controls {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+/* --------------------------------------------------------------------------
+   Scoreboard Table
+   -------------------------------------------------------------------------- */
+.scoreboard-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.scoreboard {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.scoreboard th {
+  color: var(--gold);
+  text-align: center;
+  padding: 8px 10px;
+  border-bottom: 2px solid var(--border-color);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  white-space: nowrap;
+}
+
+.scoreboard td {
+  text-align: center;
+  padding: 7px 10px;
+  border-bottom: 1px solid rgba(46, 82, 54, 0.3);
+  color: var(--text-primary);
+}
+
+/* Alternating row colours */
+.scoreboard tbody tr:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.scoreboard tbody tr:nth-child(even) {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+/* Result cell colours */
+.result-win {
+  color: var(--green-bright);
+  font-weight: 700;
+}
+
+.result-loss {
+  color: #ef5350;
+  font-weight: 700;
+}
+
+.result-push {
+  color: var(--text-muted);
+}
+
+/* --------------------------------------------------------------------------
+   Stats Bar
+   -------------------------------------------------------------------------- */
+.stats-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+  margin-bottom: 4px;
+}
+
+.stat-badge {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.stat-badge strong {
+  color: var(--text-primary);
+}
+
+.stat-badge.wins strong    { color: var(--green-bright); }
+.stat-badge.losses strong  { color: #ef5350; }
+.stat-badge.accuracy strong { color: var(--gold); }
+.stat-badge.consec strong  { color: #ff9800; }

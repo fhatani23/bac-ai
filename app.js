@@ -1,18 +1,15 @@
 /**
  * app.js — Main application logic for the AI-powered Baccarat Betting System.
- * Reads 10 hand inputs and a strategy selector, then outputs AI analysis
- * and money management bet sizing.
+ *
+ * Phase 1 — Setup: reads 10 hand inputs, initialises SessionManager, transitions to Phase 2.
+ * Phase 2 — Live Play: hand-by-hand prediction loop with result tracking, scoreboard,
+ *            consecutive-loss guard (stop at 7), and New Shoe / Full Reset controls.
  */
 
-import { analyzeHands } from "./ai_engine.js";
-import { getParoliBet } from "./paroli.js";
-import { getMartingaleBet } from "./martingale.js";
-import { getFibonacciBet } from "./fibonacci.js";
-import { getOneThreeTwoSixBet } from "./one_three_two_six.js";
-import { getDalembertBet } from "./dalembert.js";
+import { SessionManager } from "./session_manager.js";
 
 // ---------------------------------------------------------------------------
-// Strategy metadata (descriptions shown in the tooltip)
+// Strategy metadata (descriptions shown below the dropdown)
 // ---------------------------------------------------------------------------
 const STRATEGY_DESCRIPTIONS = {
   paroli:
@@ -27,30 +24,82 @@ const STRATEGY_DESCRIPTIONS = {
     "Gradual negative progression — +1 unit on loss, -1 unit on win. Low risk.",
 };
 
+const STRATEGY_LABELS = {
+  paroli: "Paroli",
+  martingale: "Martingale",
+  fibonacci: "Fibonacci",
+  "1-3-2-6": "1-3-2-6",
+  dalembert: "D'Alembert",
+};
+
 // ---------------------------------------------------------------------------
-// DOM references (assigned after DOMContentLoaded)
+// DOM references (assigned in DOMContentLoaded)
 // ---------------------------------------------------------------------------
+
+// Phase 1
+let setupPhase;
 let strategySelect;
 let strategyDescription;
 let baseUnitInput;
 let analyzeBtn;
-let resultsPanel;
+
+// Phase 2
+let livePlaySection;
+let liveHandTitle;
+let predictionCard;
+let btnBanker, btnPlayer, btnTie;
+let lossWarning;
+let stopBanner;
+let scoreboardBody;
+let statsBar;
+let btnNewShoe, btnFullReset;
+let btnNewShoe2, btnFullReset2;
 
 // ---------------------------------------------------------------------------
-// Initialize app
+// Session state
+// ---------------------------------------------------------------------------
+let session = null;
+
+// ---------------------------------------------------------------------------
+// Bootstrap
 // ---------------------------------------------------------------------------
 document.addEventListener("DOMContentLoaded", () => {
-  strategySelect = document.getElementById("strategySelect");
+  // Phase 1 elements
+  setupPhase         = document.getElementById("setup-phase");
+  strategySelect     = document.getElementById("strategySelect");
   strategyDescription = document.getElementById("strategyDescription");
-  baseUnitInput = document.getElementById("baseUnit");
-  analyzeBtn = document.getElementById("analyzeBtn");
-  resultsPanel = document.getElementById("resultsPanel");
+  baseUnitInput      = document.getElementById("baseUnit");
+  analyzeBtn         = document.getElementById("analyzeBtn");
 
-  // Update description tooltip when strategy changes
+  // Phase 2 elements
+  livePlaySection = document.getElementById("live-play");
+  liveHandTitle   = document.getElementById("liveHandTitle");
+  predictionCard  = document.getElementById("predictionCard");
+  btnBanker       = document.getElementById("btnBanker");
+  btnPlayer       = document.getElementById("btnPlayer");
+  btnTie          = document.getElementById("btnTie");
+  lossWarning     = document.getElementById("lossWarning");
+  stopBanner      = document.getElementById("stopBanner");
+  scoreboardBody  = document.getElementById("scoreboardBody");
+  statsBar        = document.getElementById("statsBar");
+  btnNewShoe      = document.getElementById("btnNewShoe");
+  btnFullReset    = document.getElementById("btnFullReset");
+  btnNewShoe2     = document.getElementById("btnNewShoe2");
+  btnFullReset2   = document.getElementById("btnFullReset2");
+
+  // Strategy description tooltip
   strategySelect.addEventListener("change", updateStrategyDescription);
-  updateStrategyDescription(); // set initial description
+  updateStrategyDescription();
 
-  analyzeBtn.addEventListener("click", runAnalysis);
+  // Button handlers
+  analyzeBtn.addEventListener("click", startLivePlay);
+  btnBanker.addEventListener("click", () => handleResult("B"));
+  btnPlayer.addEventListener("click", () => handleResult("P"));
+  btnTie.addEventListener("click",    () => handleResult("T"));
+  btnNewShoe.addEventListener("click",   onNewShoe);
+  btnFullReset.addEventListener("click", onFullReset);
+  btnNewShoe2.addEventListener("click",  onNewShoe);
+  btnFullReset2.addEventListener("click", onFullReset);
 });
 
 /** Update the tooltip text below the strategy dropdown. */
@@ -60,251 +109,284 @@ function updateStrategyDescription() {
 }
 
 // ---------------------------------------------------------------------------
-// Core analysis
+// Phase 1 → Phase 2 transition
 // ---------------------------------------------------------------------------
 
-/** Read hand selects, run AI engine + chosen strategy, render results. */
-function runAnalysis() {
-  // 1. Collect the 10 hand values
+/**
+ * Validate the 10 hand inputs, initialise the SessionManager, seed it with
+ * the training hands, then switch to the live play UI.
+ */
+function startLivePlay() {
+  // Collect the 10 hand values
   const hands = [];
   for (let i = 1; i <= 10; i++) {
-    const val = document.getElementById(`hand${i}`).value;
-    hands.push(val);
+    hands.push(document.getElementById(`hand${i}`).value);
   }
 
-  // 2. Base unit
   const baseUnit = parseFloat(baseUnitInput.value) || 10;
-
-  // 3. AI analysis
-  const aiResult = analyzeHands(hands);
-
-  // 4. Strategy calculation
   const strategy = strategySelect.value;
-  const strategyResult = computeStrategy(strategy, hands, baseUnit);
 
-  // 5. Render
-  renderResults(aiResult, strategyResult, strategy, baseUnit);
+  // Initialise session and seed with the 10 training hands
+  session = new SessionManager(baseUnit, strategy);
+  hands.forEach((h) => session.hands.push(h));
+
+  // Switch UI phases
+  setupPhase.style.display = "none";
+  livePlaySection.style.display = "block";
+
+  // Reset live play UI state
+  scoreboardBody.innerHTML = "";
+  stopBanner.style.display = "none";
+  lossWarning.style.display = "none";
+  setResultButtonsDisabled(false);
+  updateStatsBar();
+
+  // Show the first prediction (hand #11 onwards)
+  renderNextPrediction();
+
+  livePlaySection.scrollIntoView({ behavior: "smooth" });
+}
+
+// ---------------------------------------------------------------------------
+// Live play — result handling
+// ---------------------------------------------------------------------------
+
+/**
+ * Called when the user clicks Banker / Player / Tie.
+ * Records the result, updates the scoreboard and stats, then shows the
+ * next prediction (or the STOP banner if 7 consecutive losses are reached).
+ *
+ * @param {string} actual - "B", "P", or "T"
+ */
+function handleResult(actual) {
+  if (!session || !session.shoeActive) return;
+
+  // Record and get outcome
+  const outcome = session.recordResult(actual);
+
+  // Append row to scoreboard
+  addScoreboardRow(outcome);
+
+  // Update stats and warning bars
+  updateStatsBar();
+  updateLossWarning(outcome.consecutiveLosses);
+
+  if (!outcome.shoeActive) {
+    // 7 consecutive losses — stop play
+    stopBanner.style.display = "block";
+    setResultButtonsDisabled(true);
+    stopBanner.scrollIntoView({ behavior: "smooth" });
+  } else {
+    // Continue to next prediction
+    renderNextPrediction();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Prediction rendering
+// ---------------------------------------------------------------------------
+
+/** Ask the session for the next prediction and update the prediction card + header. */
+function renderNextPrediction() {
+  const prediction = session.makePrediction();
+  const handNumber = session.hands.length + 1; // next hand to be played
+
+  liveHandTitle.textContent = `Live Play Mode — Hand #${handNumber}`;
+  renderPredictionCard(prediction);
 }
 
 /**
- * Compute streak/counter values from the last 10 hands and call
- * the appropriate strategy function.
- *
- * @param {string} strategy  - One of: paroli | martingale | fibonacci | 1-3-2-6 | dalembert
- * @param {string[]} hands   - Array of 10 "B" / "P" / "T" results
- * @param {number} baseUnit  - Base bet in dollars
- * @returns {object} Strategy-specific result object
+ * Render the AI prediction card content.
+ * @param {{ predictedOutcome: string, confidence: number, pattern: string, reasoning: string, betAmount: number }} prediction
  */
-function computeStrategy(strategy, hands, baseUnit) {
-  switch (strategy) {
-    case "paroli": {
-      const winStreak = trailingBankerWins(hands);
-      return { ...getParoliBet(winStreak, baseUnit), winStreak };
-    }
-    case "martingale": {
-      const lossStreak = trailingLosses(hands);
-      return { ...getMartingaleBet(lossStreak, baseUnit), lossStreak };
-    }
-    case "fibonacci": {
-      const lossStreak = trailingLosses(hands);
-      return { ...getFibonacciBet(lossStreak, baseUnit), lossStreak };
-    }
-    case "1-3-2-6": {
-      const winStreak = trailingBankerWins(hands);
-      return { ...getOneThreeTwoSixBet(winStreak, baseUnit), winStreak };
-    }
-    case "dalembert": {
-      const netLosses = calcNetLosses(hands);
-      return { ...getDalembertBet(netLosses, baseUnit), netLosses };
-    }
-    default:
-      return {};
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Streak / counter helpers
-// ---------------------------------------------------------------------------
-
-/** Count trailing consecutive Banker wins (ignoring Ties). */
-function trailingBankerWins(hands) {
-  let count = 0;
-  for (let i = hands.length - 1; i >= 0; i--) {
-    if (hands[i] === "T") continue; // Ties don't break or count streaks
-    if (hands[i] === "B") count++;
-    else break;
-  }
-  return count;
-}
-
-/** Count trailing consecutive non-Banker results (losses when betting Banker). */
-function trailingLosses(hands) {
-  let count = 0;
-  for (let i = hands.length - 1; i >= 0; i--) {
-    if (hands[i] === "T") continue; // Ties are pushes — don't count as losses
-    if (hands[i] !== "B") count++;
-    else break;
-  }
-  return count;
-}
-
-/** Net losses = (Player results) − (Banker results) across all 10 hands, min 0. */
-function calcNetLosses(hands) {
-  let losses = 0;
-  let wins = 0;
-  hands.forEach((h) => {
-    if (h === "B") wins++;
-    else if (h === "P") losses++;
-    // Ties ignored
-  });
-  return Math.max(0, losses - wins);
-}
-
-// ---------------------------------------------------------------------------
-// Rendering
-// ---------------------------------------------------------------------------
-
-const STRATEGY_LABELS = {
-  paroli: "Paroli",
-  martingale: "Martingale",
-  fibonacci: "Fibonacci",
-  "1-3-2-6": "1-3-2-6",
-  dalembert: "D'Alembert",
-};
-
-/** Build and inject the results HTML into the results panel. */
-function renderResults(ai, strat, strategyKey, baseUnit) {
-  const stratName = STRATEGY_LABELS[strategyKey] || strategyKey;
-  const commissionRate = 0.05;
-  const netPayout = (strat.betAmount * (1 - commissionRate)).toFixed(2);
-
-  // Confidence badge colour
+function renderPredictionCard(prediction) {
+  const strategy = session.strategy;
+  const stratName = STRATEGY_LABELS[strategy] || strategy;
   const confColor =
-    ai.confidence >= 75
+    prediction.confidence >= 75
       ? "#4caf50"
-      : ai.confidence >= 60
+      : prediction.confidence >= 60
       ? "#ff9800"
       : "#f44336";
 
-  // Extra strategy-specific info rows
-  const extraRows = buildExtraRows(strat, strategyKey, baseUnit);
+  // Confidence bar fill (clamped 0–100)
+  const barFill = Math.min(100, Math.max(0, prediction.confidence));
 
-  resultsPanel.innerHTML = `
-    <div class="result-card">
-      <div class="result-header">
-        <span class="result-icon">🃏</span>
-        <h2>AI Baccarat Advisor</h2>
-      </div>
-
-      <div class="result-section">
-        <h3>📊 AI Analysis</h3>
-        <div class="stat-row">
-          <span class="stat-label">Suggestion</span>
-          <span class="stat-value highlight">Banker</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-label">Confidence</span>
-          <span class="stat-value" style="color:${confColor}">${ai.confidence}%</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-label">Pattern</span>
-          <span class="stat-value">${ai.pattern}</span>
-        </div>
-        <div class="reasoning">${ai.reasoning}</div>
-      </div>
-
-      <div class="result-section">
-        <h3>💼 ${stratName} Strategy</h3>
-        <div class="stat-row">
-          <span class="stat-label">Bet Amount</span>
-          <span class="stat-value highlight">$${strat.betAmount.toFixed(2)}</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-label">Net Payout (after 5% commission)</span>
-          <span class="stat-value">$${netPayout}</span>
-        </div>
-        ${extraRows}
-        <div class="next-stage">${strat.nextStagePreview || ""}</div>
-      </div>
-
-      <div class="result-section">
-        <h3>📈 Hand History Summary</h3>
-        <div class="hand-summary">
-          <span class="hand-badge banker">B: ${ai.bankerCount}</span>
-          <span class="hand-badge player">P: ${ai.playerCount}</span>
-          <span class="hand-badge tie">T: ${ai.tieCount}</span>
-        </div>
-      </div>
-
-      <div class="disclaimer">
-        ⚠️ No system overcomes the house edge. Bet responsibly.
-      </div>
+  predictionCard.innerHTML = `
+    <div class="pred-header">
+      <span class="pred-icon">🤖</span>
+      <h3>AI Prediction</h3>
     </div>
+
+    <div class="pred-row">
+      <span class="pred-label">Bet</span>
+      <span class="pred-value bet-banker">🏦 BANKER</span>
+    </div>
+
+    <div class="pred-row">
+      <span class="pred-label">Bet Size</span>
+      <span class="pred-value highlight">$${prediction.betAmount.toFixed(2)}
+        <em class="strat-tag">(${stratName})</em>
+      </span>
+    </div>
+
+    <div class="pred-row">
+      <span class="pred-label">Confidence</span>
+      <span class="pred-value" style="color:${confColor}">${prediction.confidence}%</span>
+    </div>
+    <div class="confidence-bar">
+      <div class="confidence-fill" style="width:${barFill}%; background:${confColor};"></div>
+    </div>
+
+    <div class="pred-row">
+      <span class="pred-label">Pattern</span>
+      <span class="pred-value pred-pattern">${prediction.pattern}</span>
+    </div>
+
+    <div class="pred-reasoning">${prediction.reasoning}</div>
+  `;
+}
+
+// ---------------------------------------------------------------------------
+// Scoreboard
+// ---------------------------------------------------------------------------
+
+/**
+ * Append one row to the live scoreboard.
+ * @param {{ betAmount: number, prediction: object, correct: boolean|null }} outcome
+ */
+function addScoreboardRow(outcome) {
+  const record = session.predictions[session.predictions.length - 1];
+  const row = document.createElement("tr");
+
+  // Result cell styling
+  let resultIcon, resultClass;
+  if (outcome.correct === true) {
+    resultIcon = "✅ WIN";
+    resultClass = "result-win";
+  } else if (outcome.correct === false) {
+    resultIcon = "❌ LOSS";
+    resultClass = "result-loss";
+  } else {
+    resultIcon = "➖ PUSH";
+    resultClass = "result-push";
+  }
+
+  const actualLabel = record.actual === "B" ? "B" : record.actual === "P" ? "P" : "T";
+
+  row.innerHTML = `
+    <td>${record.handNumber}</td>
+    <td>B</td>
+    <td>${actualLabel}</td>
+    <td class="${resultClass}">${resultIcon}</td>
+    <td>$${record.betAmount.toFixed(2)}</td>
   `;
 
-  resultsPanel.style.display = "block";
-  resultsPanel.scrollIntoView({ behavior: "smooth" });
+  scoreboardBody.appendChild(row);
+  row.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
-/** Build strategy-specific extra stat rows for the results card. */
-function buildExtraRows(strat, strategyKey, baseUnit) {
-  switch (strategyKey) {
-    case "paroli":
-      return `
-        <div class="stat-row">
-          <span class="stat-label">Win Streak</span>
-          <span class="stat-value">${strat.winStreak}</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-label">Stage</span>
-          <span class="stat-value">${strat.stage} / 3</span>
-        </div>`;
+// ---------------------------------------------------------------------------
+// Stats bar
+// ---------------------------------------------------------------------------
 
-    case "martingale":
-      return `
-        <div class="stat-row">
-          <span class="stat-label">Loss Streak</span>
-          <span class="stat-value">${strat.lossStreak}</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-label">Doubling Level</span>
-          <span class="stat-value">${strat.stage} / 5${strat.cappedOut ? " ⚠️ CAPPED" : ""}</span>
-        </div>`;
+/** Refresh all the stat badge values from the current session. */
+function updateStatsBar() {
+  const stats = session.getStats();
+  document.getElementById("statHands").textContent    = stats.totalHands;
+  document.getElementById("statWins").textContent     = stats.correctPredictions;
+  document.getElementById("statLosses").textContent   = stats.totalLosses;
+  document.getElementById("statPushes").textContent   = stats.totalPushes;
+  document.getElementById("statAccuracy").textContent = stats.accuracy + "%";
+  document.getElementById("statConsec").textContent   = stats.consecutiveLosses + "/7";
+}
 
-    case "fibonacci":
-      return `
-        <div class="stat-row">
-          <span class="stat-label">Loss Streak</span>
-          <span class="stat-value">${strat.lossStreak}</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-label">Sequence Index</span>
-          <span class="stat-value">${strat.sequenceIndex} (${strat.sequence[strat.sequenceIndex]}× base)</span>
-        </div>`;
+// ---------------------------------------------------------------------------
+// Loss warning bar
+// ---------------------------------------------------------------------------
 
-    case "1-3-2-6":
-      return `
-        <div class="stat-row">
-          <span class="stat-label">Win Streak</span>
-          <span class="stat-value">${strat.winStreak}</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-label">Stage</span>
-          <span class="stat-value">${strat.stage} / 3${strat.cycleFull ? " 🎉 Cycle Complete" : ""}</span>
-        </div>`;
+/**
+ * Show/hide and colour the consecutive-loss warning.
+ * • 0–3  → hidden
+ * • 4    → yellow
+ * • 5–6  → orange
+ * • 7+   → red
+ *
+ * @param {number} count
+ */
+function updateLossWarning(count) {
+  if (count < 4) {
+    lossWarning.style.display = "none";
+    return;
+  }
 
-    case "dalembert":
-      return `
-        <div class="stat-row">
-          <span class="stat-label">Net Losses (last 10)</span>
-          <span class="stat-value">${strat.netLosses}</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-label">D'Alembert Level</span>
-          <span class="stat-value">+${strat.level} unit${strat.level !== 1 ? "s" : ""}</span>
-        </div>`;
+  lossWarning.style.display = "block";
 
-    default:
-      return "";
+  if (count >= 7) {
+    lossWarning.className = "loss-warning loss-red";
+    lossWarning.textContent = `🛑 DANGER: ${count} consecutive losses — stop play recommended`;
+  } else if (count >= 5) {
+    lossWarning.className = "loss-warning loss-orange";
+    lossWarning.textContent = `⚠️ Warning: ${count} consecutive losses — consider pausing`;
+  } else {
+    lossWarning.className = "loss-warning loss-yellow";
+    lossWarning.textContent = `⚠️ Caution: ${count} consecutive losses — monitor closely`;
   }
 }
+
+// ---------------------------------------------------------------------------
+// New Shoe / Full Reset
+// ---------------------------------------------------------------------------
+
+/** Reset the consecutive loss counter and resume play without clearing history. */
+function onNewShoe() {
+  session.resetShoe();
+  stopBanner.style.display = "none";
+  lossWarning.style.display = "none";
+  setResultButtonsDisabled(false);
+  updateStatsBar();
+  renderNextPrediction();
+}
+
+/** Clear all session data and return to the Phase 1 setup screen. */
+function onFullReset() {
+  session.fullReset();
+
+  // Clear scoreboard
+  scoreboardBody.innerHTML = "";
+
+  // Reset stats display
+  document.getElementById("statHands").textContent    = "0";
+  document.getElementById("statWins").textContent     = "0";
+  document.getElementById("statLosses").textContent   = "0";
+  document.getElementById("statPushes").textContent   = "0";
+  document.getElementById("statAccuracy").textContent = "0%";
+  document.getElementById("statConsec").textContent   = "0/7";
+
+  // Clear hand selectors back to default (Banker)
+  for (let i = 1; i <= 10; i++) {
+    document.getElementById(`hand${i}`).value = "B";
+  }
+
+  // Hide warnings and banners
+  stopBanner.style.display = "none";
+  lossWarning.style.display = "none";
+  setResultButtonsDisabled(false);
+
+  // Switch back to Phase 1
+  livePlaySection.style.display = "none";
+  setupPhase.style.display = "block";
+  setupPhase.scrollIntoView({ behavior: "smooth" });
+}
+
+// ---------------------------------------------------------------------------
+// UI helpers
+// ---------------------------------------------------------------------------
+
+/** Enable or disable the three result entry buttons. */
+function setResultButtonsDisabled(disabled) {
+  btnBanker.disabled = disabled;
+  btnPlayer.disabled = disabled;
+  btnTie.disabled    = disabled;
+}
+
