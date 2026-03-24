@@ -1,0 +1,351 @@
+/* ==========================================================================
+   Baccarat AI Advisor — style.css
+   Dark casino-themed design with gold accents
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   CSS Variables
+   -------------------------------------------------------------------------- */
+:root {
+  --bg-dark: #0d1b0e;
+  --bg-card: #142318;
+  --bg-input: #1a2e1e;
+  --border-color: #2e5236;
+  --gold: #d4af37;
+  --gold-light: #f0d060;
+  --green-bright: #4caf50;
+  --green-mid: #2e7d32;
+  --red-accent: #c62828;
+  --text-primary: #f0f0e8;
+  --text-muted: #8a9e8a;
+  --text-dim: #567056;
+  --radius: 10px;
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
+}
+
+/* --------------------------------------------------------------------------
+   Reset & Base
+   -------------------------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  min-height: 100vh;
+  padding: 20px 16px 60px;
+}
+
+/* --------------------------------------------------------------------------
+   Layout
+   -------------------------------------------------------------------------- */
+.container {
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+/* --------------------------------------------------------------------------
+   Header
+   -------------------------------------------------------------------------- */
+header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+header h1 {
+  font-size: 2rem;
+  color: var(--gold);
+  letter-spacing: 1px;
+  text-shadow: 0 0 16px rgba(212, 175, 55, 0.4);
+  margin-bottom: 6px;
+}
+
+header p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+/* --------------------------------------------------------------------------
+   Cards / Sections
+   -------------------------------------------------------------------------- */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow);
+}
+
+.card h2 {
+  color: var(--gold);
+  font-size: 1.05rem;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   Form Elements
+   -------------------------------------------------------------------------- */
+label {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+}
+
+input[type="number"],
+select {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  padding: 10px 12px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+input[type="number"]:focus,
+select:focus {
+  border-color: var(--gold);
+}
+
+/* Custom select arrow */
+.select-wrapper {
+  position: relative;
+}
+
+.select-wrapper::after {
+  content: "▾";
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--gold);
+  pointer-events: none;
+  font-size: 1rem;
+}
+
+/* --------------------------------------------------------------------------
+   Strategy Selector
+   -------------------------------------------------------------------------- */
+.strategy-description {
+  margin-top: 10px;
+  font-size: 0.85rem;
+  color: var(--gold-light);
+  background: rgba(212, 175, 55, 0.07);
+  border-left: 3px solid var(--gold);
+  padding: 8px 12px;
+  border-radius: 0 6px 6px 0;
+  min-height: 36px;
+  transition: all 0.2s;
+}
+
+/* --------------------------------------------------------------------------
+   Hand Grid
+   -------------------------------------------------------------------------- */
+.hand-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 480px) {
+  .hand-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.hand-item label {
+  text-align: center;
+  font-size: 0.8rem;
+}
+
+/* --------------------------------------------------------------------------
+   Analyze Button
+   -------------------------------------------------------------------------- */
+.btn-analyze {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--green-mid), var(--green-bright));
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 16px rgba(76, 175, 80, 0.35);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.btn-analyze:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.5);
+}
+
+.btn-analyze:active {
+  transform: translateY(0);
+}
+
+/* --------------------------------------------------------------------------
+   Results Panel
+   -------------------------------------------------------------------------- */
+#resultsPanel {
+  display: none;
+}
+
+.result-card {
+  background: var(--bg-card);
+  border: 1px solid var(--gold);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: 0 0 32px rgba(212, 175, 55, 0.15);
+}
+
+.result-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.result-header .result-icon {
+  font-size: 2rem;
+}
+
+.result-header h2 {
+  color: var(--gold);
+  font-size: 1.3rem;
+}
+
+.result-section {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.result-section:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.result-section h3 {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+
+/* Stat rows */
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(46, 82, 54, 0.4);
+  gap: 8px;
+}
+
+.stat-row:last-child {
+  border-bottom: none;
+}
+
+.stat-label {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+.stat-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: right;
+}
+
+.stat-value.highlight {
+  color: var(--gold);
+  font-size: 1.15rem;
+}
+
+.reasoning {
+  margin-top: 10px;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 10px 12px;
+  border-radius: 6px;
+}
+
+.next-stage {
+  margin-top: 10px;
+  font-size: 0.88rem;
+  color: var(--gold-light);
+  background: rgba(212, 175, 55, 0.07);
+  padding: 10px 12px;
+  border-radius: 6px;
+  border-left: 3px solid var(--gold);
+}
+
+/* Hand history badges */
+.hand-summary {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.hand-badge {
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.hand-badge.banker {
+  background: var(--green-mid);
+  color: #fff;
+}
+
+.hand-badge.player {
+  background: var(--red-accent);
+  color: #fff;
+}
+
+.hand-badge.tie {
+  background: #4a4a20;
+  color: var(--gold-light);
+}
+
+/* Disclaimer */
+.disclaimer {
+  margin-top: 16px;
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+/* --------------------------------------------------------------------------
+   Footer
+   -------------------------------------------------------------------------- */
+footer {
+  text-align: center;
+  margin-top: 32px;
+  color: var(--text-dim);
+  font-size: 0.78rem;
+}

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🃏 Baccarat AI Advisor</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Header -->
+      <header>
+        <h1>🃏 Baccarat AI Advisor</h1>
+        <p>Enter your last 10 hands to get an AI-powered betting suggestion.</p>
+      </header>
+
+      <!-- Base Unit -->
+      <div class="card">
+        <h2>💵 Base Bet Unit</h2>
+        <label for="baseUnit">Base unit amount ($)</label>
+        <input
+          type="number"
+          id="baseUnit"
+          min="1"
+          step="1"
+          value="10"
+          placeholder="e.g. 10"
+        />
+      </div>
+
+      <!-- Strategy Selector -->
+      <div class="card">
+        <h2>💼 Money Management Strategy</h2>
+        <label for="strategySelect">Select strategy</label>
+        <div class="select-wrapper">
+          <select id="strategySelect">
+            <option value="paroli">Paroli</option>
+            <option value="martingale">Martingale</option>
+            <option value="fibonacci">Fibonacci</option>
+            <option value="1-3-2-6">1-3-2-6</option>
+            <option value="dalembert">D'Alembert</option>
+          </select>
+        </div>
+        <div class="strategy-description" id="strategyDescription"></div>
+      </div>
+
+      <!-- Hand Inputs -->
+      <div class="card">
+        <h2>🎴 Last 10 Hands</h2>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 14px;">
+          Hand 1 = oldest &nbsp;|&nbsp; Hand 10 = most recent
+        </p>
+        <div class="hand-grid">
+          <!-- Hands 1–10 -->
+          <div class="hand-item">
+            <label for="hand1">Hand 1</label>
+            <div class="select-wrapper">
+              <select id="hand1">
+                <option value="B">Banker</option>
+                <option value="P">Player</option>
+                <option value="T">Tie</option>
+              </select>
+            </div>
+          </div>
+          <div class="hand-item">
+            <label for="hand2">Hand 2</label>
+            <div class="select-wrapper">
+              <select id="hand2">
+                <option value="B">Banker</option>
+                <option value="P">Player</option>
+                <option value="T">Tie</option>
+              </select>
+            </div>
+          </div>
+          <div class="hand-item">
+            <label for="hand3">Hand 3</label>
+            <div class="select-wrapper">
+              <select id="hand3">
+                <option value="B">Banker</option>
+                <option value="P">Player</option>
+                <option value="T">Tie</option>
+              </select>
+            </div>
+          </div>
+          <div class="hand-item">
+            <label for="hand4">Hand 4</label>
+            <div class="select-wrapper">
+              <select id="hand4">
+                <option value="B">Banker</option>
+                <option value="P">Player</option>
+                <option value="T">Tie</option>
+              </select>
+            </div>
+          </div>
+          <div class="hand-item">
+            <label for="hand5">Hand 5</label>
+            <div class="select-wrapper">
+              <select id="hand5">
+                <option value="B">Banker</option>
+                <option value="P">Player</option>
+                <option value="T">Tie</option>
+              </select>
+            </div>
+          </div>
+          <div class="hand-item">
+            <label for="hand6">Hand 6</label>
+            <div class="select-wrapper">
+              <select id="hand6">
+                <option value="B">Banker</option>
+                <option value="P">Player</option>
+                <option value="T">Tie</option>
+              </select>
+            </div>
+          </div>
+          <div class="hand-item">
+            <label for="hand7">Hand 7</label>
+            <div class="select-wrapper">
+              <select id="hand7">
+                <option value="B">Banker</option>
+                <option value="P">Player</option>
+                <option value="T">Tie</option>
+              </select>
+            </div>
+          </div>
+          <div class="hand-item">
+            <label for="hand8">Hand 8</label>
+            <div class="select-wrapper">
+              <select id="hand8">
+                <option value="B">Banker</option>
+                <option value="P">Player</option>
+                <option value="T">Tie</option>
+              </select>
+            </div>
+          </div>
+          <div class="hand-item">
+            <label for="hand9">Hand 9</label>
+            <div class="select-wrapper">
+              <select id="hand9">
+                <option value="B">Banker</option>
+                <option value="P">Player</option>
+                <option value="T">Tie</option>
+              </select>
+            </div>
+          </div>
+          <div class="hand-item">
+            <label for="hand10">Hand 10</label>
+            <div class="select-wrapper">
+              <select id="hand10">
+                <option value="B">Banker</option>
+                <option value="P">Player</option>
+                <option value="T">Tie</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Analyze Button -->
+      <button class="btn-analyze" id="analyzeBtn">🔍 Analyze &amp; Suggest Bet</button>
+
+      <!-- Results Panel (hidden until analysis runs) -->
+      <div id="resultsPanel" style="margin-top: 24px;"></div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      <p>Baccarat AI Advisor — for educational purposes only. Gamble responsibly.</p>
+    </footer>
+
+    <!-- ES module entry point -->
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
