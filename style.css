@@ -756,3 +756,61 @@ footer {
 .stat-badge.losses strong  { color: #ef5350; }
 .stat-badge.accuracy strong { color: var(--gold); }
 .stat-badge.consec strong  { color: #ff9800; }
+
+/* --------------------------------------------------------------------------
+   Second Opinion Card
+   -------------------------------------------------------------------------- */
+.second-opinion-card {
+  border: 1px solid #8b6914;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 12px;
+  background: #0f1e35;
+}
+
+.second-opinion-card.suggests-player {
+  border-color: #c0392b;
+  background: #1e0f0f;
+}
+
+.second-opinion-card .card-title {
+  color: #c9a84c;
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+}
+
+.second-opinion-card .disclaimer {
+  font-size: 0.75em;
+  color: #a0a0a0;
+  margin-top: 10px;
+  font-style: italic;
+}
+
+.so-value {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.so-banker {
+  color: var(--green-bright);
+}
+
+.so-player {
+  color: #ef5350;
+}
+
+/* --------------------------------------------------------------------------
+   Alternative Action hint
+   -------------------------------------------------------------------------- */
+.pred-alt-action {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: rgba(255, 152, 0, 0.1);
+  border-left: 3px solid #ff9800;
+  border-radius: 0 6px 6px 0;
+  font-size: 0.85rem;
+  color: #ff9800;
+  font-weight: 600;
+}

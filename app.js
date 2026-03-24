@@ -197,7 +197,7 @@ function renderNextPrediction() {
 
 /**
  * Render the AI prediction card content.
- * @param {{ predictedOutcome: string, confidence: number, pattern: string, reasoning: string, betAmount: number }} prediction
+ * @param {{ predictedOutcome: string, confidence: number, pattern: string, reasoning: string, betAmount: number, skipBet: boolean, alternativeAction: string|null, secondOpinion: object|null }} prediction
  */
 function renderPredictionCard(prediction) {
   const strategy = session.strategy;
@@ -212,6 +212,16 @@ function renderPredictionCard(prediction) {
   // Confidence bar fill (clamped 0–100)
   const barFill = Math.min(100, Math.max(0, prediction.confidence));
 
+  // Bet size label — flag minimum-only when skipBet is active
+  const betLabel = prediction.skipBet
+    ? `$${prediction.betAmount.toFixed(2)} <em class="strat-tag">(min — low confidence ⚠️)</em>`
+    : `$${prediction.betAmount.toFixed(2)} <em class="strat-tag">(${stratName})</em>`;
+
+  // Optional alternative action hint
+  const altActionHtml = prediction.alternativeAction
+    ? `<div class="pred-alt-action">⚠️ ${prediction.alternativeAction}</div>`
+    : "";
+
   predictionCard.innerHTML = `
     <div class="pred-header">
       <span class="pred-icon">🤖</span>
@@ -225,8 +235,7 @@ function renderPredictionCard(prediction) {
 
     <div class="pred-row">
       <span class="pred-label">Bet Size</span>
-      <span class="pred-value highlight">$${prediction.betAmount.toFixed(2)}
-        <em class="strat-tag">(${stratName})</em>
+      <span class="pred-value highlight">${betLabel}
       </span>
     </div>
 
@@ -244,7 +253,76 @@ function renderPredictionCard(prediction) {
     </div>
 
     <div class="pred-reasoning">${prediction.reasoning}</div>
+    ${altActionHtml}
   `;
+
+  // Render second opinion card if present
+  renderSecondOpinionCard(prediction.secondOpinion);
+}
+
+// ---------------------------------------------------------------------------
+// Second Opinion Card
+// ---------------------------------------------------------------------------
+
+/**
+ * Render (or clear) the second opinion card below the main prediction card.
+ * @param {object|null} secondOpinion - Result from analyzeHandsUnbiased(), or null
+ */
+function renderSecondOpinionCard(secondOpinion) {
+  // Remove any existing second opinion card
+  const existing = document.getElementById("secondOpinionCard");
+  if (existing) existing.remove();
+
+  if (!secondOpinion) return;
+
+  const suggestsPlayer = secondOpinion.suggestion === "Player";
+  const cardClass = suggestsPlayer
+    ? "second-opinion-card suggests-player"
+    : "second-opinion-card";
+
+  const suggestionLabel = suggestsPlayer
+    ? '<span class="so-value so-player">👤 PLAYER</span>'
+    : '<span class="so-value so-banker">🏦 BANKER</span>';
+
+  const confColor =
+    secondOpinion.confidence >= 75
+      ? "#4caf50"
+      : secondOpinion.confidence >= 60
+      ? "#ff9800"
+      : "#f44336";
+  const barFill = Math.min(100, Math.max(0, secondOpinion.confidence));
+
+  const card = document.createElement("div");
+  card.id = "secondOpinionCard";
+  card.className = cardClass;
+  card.innerHTML = `
+    <div class="card-title">🔍 Unbiased Second Opinion</div>
+
+    <div class="pred-row">
+      <span class="pred-label">Suggested Bet</span>
+      ${suggestionLabel}
+    </div>
+
+    <div class="pred-row">
+      <span class="pred-label">Confidence</span>
+      <span class="pred-value" style="color:${confColor}">${secondOpinion.confidence}%</span>
+    </div>
+    <div class="confidence-bar">
+      <div class="confidence-fill" style="width:${barFill}%; background:${confColor};"></div>
+    </div>
+
+    <div class="pred-row">
+      <span class="pred-label">Pattern</span>
+      <span class="pred-value pred-pattern">${secondOpinion.pattern}</span>
+    </div>
+
+    <div class="pred-reasoning">${secondOpinion.reasoning}</div>
+
+    <div class="disclaimer">⚠️ This analysis ignores Banker house-edge bias — use as a secondary data point only.</div>
+  `;
+
+  // Insert immediately after the prediction card
+  predictionCard.insertAdjacentElement("afterend", card);
 }
 
 // ---------------------------------------------------------------------------

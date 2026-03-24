@@ -77,13 +77,16 @@ export class SessionManager {
    *   confidence: number,
    *   pattern: string,
    *   reasoning: string,
-   *   betAmount: number
+   *   betAmount: number,
+   *   skipBet: boolean,
+   *   alternativeAction: string|null,
+   *   secondOpinion: object|null,
    * }}
    */
   makePrediction() {
     const last10 = this.getLastTenHands();
     const aiResult = analyzeHands(last10);
-    const betAmount = this._computeBetAmount();
+    const betAmount = this._computeBetAmount(aiResult.skipBet);
 
     return {
       predictedOutcome: "B",
@@ -91,6 +94,9 @@ export class SessionManager {
       pattern: aiResult.pattern,
       reasoning: aiResult.reasoning,
       betAmount,
+      skipBet: aiResult.skipBet || false,
+      alternativeAction: aiResult.alternativeAction || null,
+      secondOpinion: aiResult.secondOpinion || null,
     };
   }
 
@@ -223,9 +229,14 @@ export class SessionManager {
    * hands history.  Mirror of the helper functions in app.js so that the
    * SessionManager is self-contained.
    *
+   * When skipBet is true, always returns the base unit regardless of
+   * the progressive strategy (confidence is too low for full progression).
+   *
+   * @param {boolean} [skipBet=false]
    * @returns {number} Bet amount in dollars
    */
-  _computeBetAmount() {
+  _computeBetAmount(skipBet = false) {
+    if (skipBet) return this.baseUnit;
     const hands = this.hands;
     switch (this.strategy) {
       case "paroli": {
