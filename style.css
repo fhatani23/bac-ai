@@ -703,7 +703,7 @@ footer {
   color: var(--text-primary);
 }
 
-/* Alternating row colours */
+/* Alternating row colors */
 .scoreboard tbody tr:nth-child(odd) {
   background: rgba(255, 255, 255, 0.02);
 }
@@ -712,7 +712,7 @@ footer {
   background: rgba(0, 0, 0, 0.15);
 }
 
-/* Result cell colours */
+/* Result cell colors */
 .result-win {
   color: var(--green-bright);
   font-weight: 700;

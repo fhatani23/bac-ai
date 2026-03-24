@@ -54,6 +54,15 @@ export class SessionManager {
   // Public API
   // ---------------------------------------------------------------------------
 
+  /**
+   * Seed the session with an initial set of training hands.
+   * Must be called before the first `makePrediction()` / `recordResult()`.
+   * @param {string[]} hands - Array of "B", "P", or "T" values
+   */
+  seedHands(hands) {
+    hands.forEach((h) => this.hands.push(h));
+  }
+
   /** Returns the most recent 10 hands from the full history. */
   getLastTenHands() {
     return this.hands.slice(-10);

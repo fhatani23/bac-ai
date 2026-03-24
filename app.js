@@ -128,7 +128,7 @@ function startLivePlay() {
 
   // Initialise session and seed with the 10 training hands
   session = new SessionManager(baseUnit, strategy);
-  hands.forEach((h) => session.hands.push(h));
+  session.seedHands(hands);
 
   // Switch UI phases
   setupPhase.style.display = "none";
