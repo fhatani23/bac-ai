@@ -116,3 +116,22 @@ The **Stats Bar** shows running totals:
 ## ⚠️ Disclaimer
 
 No betting system overcomes the house edge. This tool is for **educational and entertainment purposes only**. Always gamble responsibly.
+
+---
+
+## 📱 Installing on iOS (Add to Home Screen)
+
+This app is a **Progressive Web App (PWA)** — it can be installed on iPhone/iPad and run like a native app with no App Store required.
+
+### Steps:
+1. **Host the app** — enable GitHub Pages in your repo settings (Settings → Pages → Branch: main)
+2. **Open in Safari** on your iPhone/iPad — go to `https://YOUR_USERNAME.github.io/bac-ai/`
+3. **Tap the Share button** (box with arrow pointing up)
+4. **Tap "Add to Home Screen"**
+5. **Tap "Add"** — the app icon will appear on your home screen
+6. **Launch** — opens full-screen, works offline after first load
+
+### Notes:
+- Must be opened in **Safari** (not Chrome or Firefox) for Add to Home Screen to work on iOS
+- The app caches all files on first load, so it works offline afterwards
+- Replace `icons/icon-192.png` and `icons/icon-512.png` with custom icons if desired (open `icons/generate_icons.html` in a browser to create them)

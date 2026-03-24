@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head><title>Generate Icons</title></head>
+<body>
+<h2>Baccarat AI — Icon Generator</h2>
+<p>Click each button to download the icon, then save it to the <code>icons/</code> folder.</p>
+
+<button onclick="generateIcon(192)">Download icon-192.png</button>
+<button onclick="generateIcon(512)">Download icon-512.png</button>
+
+<canvas id="c" style="display:block;margin-top:20px;border:1px solid #ccc;"></canvas>
+
+<script>
+function generateIcon(size) {
+  const canvas = document.getElementById('c');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+
+  // Background
+  ctx.fillStyle = '#0a1628';
+  ctx.fillRect(0, 0, size, size);
+
+  // Rounded rect border
+  const r = size * 0.12;
+  ctx.strokeStyle = '#c9a84c';
+  ctx.lineWidth = size * 0.04;
+  ctx.beginPath();
+  ctx.roundRect(size*0.08, size*0.08, size*0.84, size*0.84, r);
+  ctx.stroke();
+
+  // Card emoji
+  ctx.font = `${size * 0.45}px serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('🃏', size / 2, size / 2);
+
+  // Download
+  const link = document.createElement('a');
+  link.download = `icon-${size}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+</script>
+</body>
+</html>
