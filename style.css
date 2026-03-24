@@ -756,3 +756,38 @@ footer {
 .stat-badge.losses strong  { color: #ef5350; }
 .stat-badge.accuracy strong { color: var(--gold); }
 .stat-badge.consec strong  { color: #ff9800; }
+
+/* --------------------------------------------------------------------------
+   Prediction Card — Danger State
+   -------------------------------------------------------------------------- */
+.prediction-card--danger {
+  border-color: #ff9800 !important;
+  box-shadow: 0 0 24px rgba(255, 152, 0, 0.25) !important;
+  background: rgba(61, 47, 0, 0.35) !important;
+  border-left: 4px solid #ff9800 !important;
+}
+
+/* Danger tag on bet size line */
+.strat-tag--danger {
+  color: #ff9800;
+}
+
+/* --------------------------------------------------------------------------
+   AI Advice Box
+   -------------------------------------------------------------------------- */
+.ai-advice-box {
+  margin-top: 12px;
+  background: #3d2f00;
+  border: 1px solid #b8860b;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.88rem;
+  color: #f0c040;
+  line-height: 1.5;
+}
+
+.ai-advice-box.critical {
+  background: #3d0000;
+  border-color: #c62828;
+  color: #ff8a80;
+}

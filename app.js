@@ -7,6 +7,7 @@
  */
 
 import { SessionManager } from "./session_manager.js";
+import { CRITICAL_CONFIDENCE_THRESHOLD } from "./ai_engine.js";
 
 // ---------------------------------------------------------------------------
 // Strategy metadata (descriptions shown below the dropdown)
@@ -197,7 +198,7 @@ function renderNextPrediction() {
 
 /**
  * Render the AI prediction card content.
- * @param {{ predictedOutcome: string, confidence: number, pattern: string, reasoning: string, betAmount: number }} prediction
+ * @param {{ predictedOutcome: string, confidence: number, pattern: string, reasoning: string, betAmount: number, skipBet: boolean, alternativeAction: string }} prediction
  */
 function renderPredictionCard(prediction) {
   const strategy = session.strategy;
@@ -211,6 +212,22 @@ function renderPredictionCard(prediction) {
 
   // Confidence bar fill (clamped 0–100)
   const barFill = Math.min(100, Math.max(0, prediction.confidence));
+
+  // Bet size label — show low-confidence indicator when skipBet is active
+  const betSizeTag = prediction.skipBet
+    ? `<em class="strat-tag strat-tag--danger">(min — low confidence ⚠️)</em>`
+    : `<em class="strat-tag">(${stratName})</em>`;
+
+  // Advice box — shown only when skipBet is true
+  const adviceBox = prediction.skipBet
+    ? `<div class="ai-advice-box${prediction.confidence < CRITICAL_CONFIDENCE_THRESHOLD ? " critical" : ""}">
+        💡 <strong>AI Advice:</strong> ${prediction.alternativeAction}
+      </div>`
+    : "";
+
+  // Apply danger class to card when skipBet is active
+  const dangerClass = prediction.skipBet ? " prediction-card--danger" : "";
+  predictionCard.className = `card prediction-card${dangerClass}`;
 
   predictionCard.innerHTML = `
     <div class="pred-header">
@@ -226,7 +243,7 @@ function renderPredictionCard(prediction) {
     <div class="pred-row">
       <span class="pred-label">Bet Size</span>
       <span class="pred-value highlight">$${prediction.betAmount.toFixed(2)}
-        <em class="strat-tag">(${stratName})</em>
+        ${betSizeTag}
       </span>
     </div>
 
@@ -244,6 +261,7 @@ function renderPredictionCard(prediction) {
     </div>
 
     <div class="pred-reasoning">${prediction.reasoning}</div>
+    ${adviceBox}
   `;
 }
 
