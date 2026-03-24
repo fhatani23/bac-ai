@@ -37,7 +37,7 @@ let analyzeBtn;
 let resultsPanel;
 
 // ---------------------------------------------------------------------------
-// Initialise app
+// Initialize app
 // ---------------------------------------------------------------------------
 document.addEventListener("DOMContentLoaded", () => {
   strategySelect = document.getElementById("strategySelect");

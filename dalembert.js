@@ -11,8 +11,8 @@ export function getDalembertBet(netLosses, baseUnit) {
   // Ensure netLosses is non-negative; level is how many units above the base we are
   const level = Math.max(0, netLosses);
 
-  // Bet = baseUnit × max(1, 1 + level)
-  const betAmount = baseUnit * Math.max(1, 1 + level);
+  // Bet = baseUnit × (1 + level); level is already ≥ 0, so minimum is 1 unit
+  const betAmount = baseUnit * (1 + level);
 
   // Preview next stage
   let nextStagePreview;
