@@ -65,69 +65,79 @@ let session = null;
 // ---------------------------------------------------------------------------
 const handSelections = new Array(10).fill(null); // null = unset
 
-function buildHandStrip() {
+function buildBigRoad() {
   const strip = document.getElementById('handStrip');
   strip.innerHTML = '';
+  strip.className = 'big-road-grid';
   for (let i = 1; i <= 10; i++) {
-    const row = document.createElement('div');
-    row.className = 'hand-row';
-    row.id = `handRow${i}`;
-    row.innerHTML = `
-      <span class="hand-label">Hand ${i}</span>
-      <div class="hand-btns">
-        <button class="hand-btn banker-btn" data-hand="${i}" data-val="B">B</button>
-        <button class="hand-btn player-btn" data-hand="${i}" data-val="P">P</button>
-        <button class="hand-btn tie-btn"    data-hand="${i}" data-val="T">T</button>
-      </div>
-    `;
-    strip.appendChild(row);
+    const cell = document.createElement('div');
+    cell.className = 'road-cell';
+    cell.id = `handCell${i}`;
+    cell.innerHTML = `<span class="cell-value"></span><span class="cell-num">${i}</span>`;
+    cell.addEventListener('click', () => cycleHand(i));
+    strip.appendChild(cell);
   }
-
-  // Attach click handlers
-  strip.querySelectorAll('.hand-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const hand = btn.dataset.hand;
-      const val  = btn.dataset.val;
-      selectHand(hand, val);
-    });
-  });
-
   // Highlight the first hand as "current"
-  markCurrentHand(1);
+  markCurrentCell(1);
+  renderBigRoadCells();
 }
 
-function selectHand(handNum, value) {
-  const idx = parseInt(handNum, 10) - 1;
-  handSelections[idx] = value;
+function cycleHand(handNum) {
+  const idx = handNum - 1;
+  const current = handSelections[idx];
+  if (current === null) {
+    handSelections[idx] = 'B';
+  } else if (current === 'B') {
+    handSelections[idx] = 'P';
+  } else if (current === 'P') {
+    handSelections[idx] = 'T';
+  } else {
+    handSelections[idx] = 'B';
+  }
 
-  // Update button highlight for this row
-  const row = document.getElementById(`handRow${handNum}`);
-  row.querySelectorAll('.hand-btn').forEach(b => b.classList.remove('active'));
-  row.querySelector(`[data-val="${value}"]`).classList.add('active');
-  row.classList.add('filled');
+  renderBigRoadCells();
 
-  // Advance to next unfilled hand
+  // Advance current marker to first unfilled cell
   const nextUnfilled = handSelections.findIndex(h => h === null);
   if (nextUnfilled !== -1) {
-    markCurrentHand(nextUnfilled + 1);
-    // Smooth scroll to next hand on mobile
-    const nextRow = document.getElementById(`handRow${nextUnfilled + 1}`);
-    nextRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    markCurrentCell(nextUnfilled + 1);
   } else {
-    clearCurrentHand(); // all filled
+    clearCurrentCell();
   }
 
   updateAnalyzeButton();
 }
 
-function markCurrentHand(num) {
-  document.querySelectorAll('.hand-row').forEach(r => r.classList.remove('current'));
-  const row = document.getElementById(`handRow${num}`);
-  if (row) row.classList.add('current');
+function renderBigRoadCells() {
+  for (let i = 1; i <= 10; i++) {
+    const cell = document.getElementById(`handCell${i}`);
+    if (!cell) continue;
+    const val = handSelections[i - 1];
+    const valueSpan = cell.querySelector('.cell-value');
+    cell.classList.remove('banker', 'player', 'tie');
+    if (val === 'B') {
+      cell.classList.add('banker');
+      valueSpan.textContent = 'B';
+    } else if (val === 'P') {
+      cell.classList.add('player');
+      valueSpan.textContent = 'P';
+    } else if (val === 'T') {
+      cell.classList.add('tie');
+      valueSpan.textContent = 'T';
+    } else {
+      valueSpan.textContent = '';
+    }
+  }
 }
 
-function clearCurrentHand() {
-  document.querySelectorAll('.hand-row').forEach(r => r.classList.remove('current'));
+function markCurrentCell(num) {
+  document.querySelectorAll('.road-cell').forEach(c => c.classList.remove('current'));
+  const cell = document.getElementById(`handCell${num}`);
+  if (cell) cell.classList.add('current');
+}
+
+function clearCurrentCell() {
+  document.querySelectorAll('.road-cell').forEach(c => c.classList.remove('current'));
 }
 
 function updateAnalyzeButton() {
@@ -172,8 +182,8 @@ document.addEventListener("DOMContentLoaded", () => {
   strategySelect.addEventListener("change", updateStrategyDescription);
   updateStrategyDescription();
 
-  // Build the tap-button hand strip and set initial button state
-  buildHandStrip();
+  // Build the big road grid and set initial button state
+  buildBigRoad();
   updateAnalyzeButton();
 
   // Button handlers
@@ -457,9 +467,9 @@ function onFullReset() {
   document.getElementById("statAccuracy").textContent = "0%";
   document.getElementById("statConsec").textContent   = "0/7";
 
-  // Reset hand strip back to empty
+  // Reset big road grid back to empty
   handSelections.fill(null);
-  buildHandStrip();
+  buildBigRoad();
   updateAnalyzeButton();
 
   // Hide warnings and banners
