@@ -5,6 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>🃏 Baccarat AI Advisor</title>
     <link rel="stylesheet" href="style.css" />
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- iOS PWA meta tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Bac AI">
+    <meta name="theme-color" content="#0a1628">
+
+    <!-- iOS home screen icons -->
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png">
   </head>
   <body>
     <div class="container">
@@ -14,152 +28,235 @@
         <p>Enter your last 10 hands to get an AI-powered betting suggestion.</p>
       </header>
 
-      <!-- Base Unit -->
-      <div class="card">
-        <h2>💵 Base Bet Unit</h2>
-        <label for="baseUnit">Base unit amount ($)</label>
-        <input
-          type="number"
-          id="baseUnit"
-          min="1"
-          step="1"
-          value="10"
-          placeholder="e.g. 10"
-        />
-      </div>
+      <!-- ================================================================
+           PHASE 1 — Setup (hidden once live play starts)
+           ================================================================ -->
+      <section id="setup-phase">
 
-      <!-- Strategy Selector -->
-      <div class="card">
-        <h2>💼 Money Management Strategy</h2>
-        <label for="strategySelect">Select strategy</label>
-        <div class="select-wrapper">
-          <select id="strategySelect">
-            <option value="paroli">Paroli</option>
-            <option value="martingale">Martingale</option>
-            <option value="fibonacci">Fibonacci</option>
-            <option value="1-3-2-6">1-3-2-6</option>
-            <option value="dalembert">D'Alembert</option>
-          </select>
+        <!-- Base Unit -->
+        <div class="card">
+          <h2>💵 Base Bet Unit</h2>
+          <label for="baseUnit">Base unit amount ($)</label>
+          <input
+            type="number"
+            id="baseUnit"
+            min="1"
+            step="1"
+            value="10"
+            placeholder="e.g. 10"
+          />
         </div>
-        <div class="strategy-description" id="strategyDescription"></div>
-      </div>
 
-      <!-- Hand Inputs -->
-      <div class="card">
-        <h2>🎴 Last 10 Hands</h2>
-        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 14px;">
-          Hand 1 = oldest &nbsp;|&nbsp; Hand 10 = most recent
-        </p>
-        <div class="hand-grid">
-          <!-- Hands 1–10 -->
-          <div class="hand-item">
-            <label for="hand1">Hand 1</label>
-            <div class="select-wrapper">
-              <select id="hand1">
-                <option value="B">Banker</option>
-                <option value="P">Player</option>
-                <option value="T">Tie</option>
-              </select>
-            </div>
+        <!-- Strategy Selector -->
+        <div class="card">
+          <h2>💼 Money Management Strategy</h2>
+          <label for="strategySelect">Select strategy</label>
+          <div class="select-wrapper">
+            <select id="strategySelect">
+              <option value="paroli">Paroli</option>
+              <option value="martingale">Martingale</option>
+              <option value="fibonacci">Fibonacci</option>
+              <option value="1-3-2-6">1-3-2-6</option>
+              <option value="dalembert">D'Alembert</option>
+            </select>
           </div>
-          <div class="hand-item">
-            <label for="hand2">Hand 2</label>
-            <div class="select-wrapper">
-              <select id="hand2">
-                <option value="B">Banker</option>
-                <option value="P">Player</option>
-                <option value="T">Tie</option>
-              </select>
+          <div class="strategy-description" id="strategyDescription"></div>
+        </div>
+
+        <!-- Hand Inputs -->
+        <div class="card">
+          <h2>🎴 Last 10 Hands</h2>
+          <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 14px;">
+            Hand 1 = oldest &nbsp;|&nbsp; Hand 10 = most recent
+          </p>
+          <div class="hand-grid">
+            <!-- Hands 1–10 -->
+            <div class="hand-item">
+              <label for="hand1">Hand 1</label>
+              <div class="select-wrapper">
+                <select id="hand1">
+                  <option value="B">Banker</option>
+                  <option value="P">Player</option>
+                  <option value="T">Tie</option>
+                </select>
+              </div>
             </div>
-          </div>
-          <div class="hand-item">
-            <label for="hand3">Hand 3</label>
-            <div class="select-wrapper">
-              <select id="hand3">
-                <option value="B">Banker</option>
-                <option value="P">Player</option>
-                <option value="T">Tie</option>
-              </select>
+            <div class="hand-item">
+              <label for="hand2">Hand 2</label>
+              <div class="select-wrapper">
+                <select id="hand2">
+                  <option value="B">Banker</option>
+                  <option value="P">Player</option>
+                  <option value="T">Tie</option>
+                </select>
+              </div>
             </div>
-          </div>
-          <div class="hand-item">
-            <label for="hand4">Hand 4</label>
-            <div class="select-wrapper">
-              <select id="hand4">
-                <option value="B">Banker</option>
-                <option value="P">Player</option>
-                <option value="T">Tie</option>
-              </select>
+            <div class="hand-item">
+              <label for="hand3">Hand 3</label>
+              <div class="select-wrapper">
+                <select id="hand3">
+                  <option value="B">Banker</option>
+                  <option value="P">Player</option>
+                  <option value="T">Tie</option>
+                </select>
+              </div>
             </div>
-          </div>
-          <div class="hand-item">
-            <label for="hand5">Hand 5</label>
-            <div class="select-wrapper">
-              <select id="hand5">
-                <option value="B">Banker</option>
-                <option value="P">Player</option>
-                <option value="T">Tie</option>
-              </select>
+            <div class="hand-item">
+              <label for="hand4">Hand 4</label>
+              <div class="select-wrapper">
+                <select id="hand4">
+                  <option value="B">Banker</option>
+                  <option value="P">Player</option>
+                  <option value="T">Tie</option>
+                </select>
+              </div>
             </div>
-          </div>
-          <div class="hand-item">
-            <label for="hand6">Hand 6</label>
-            <div class="select-wrapper">
-              <select id="hand6">
-                <option value="B">Banker</option>
-                <option value="P">Player</option>
-                <option value="T">Tie</option>
-              </select>
+            <div class="hand-item">
+              <label for="hand5">Hand 5</label>
+              <div class="select-wrapper">
+                <select id="hand5">
+                  <option value="B">Banker</option>
+                  <option value="P">Player</option>
+                  <option value="T">Tie</option>
+                </select>
+              </div>
             </div>
-          </div>
-          <div class="hand-item">
-            <label for="hand7">Hand 7</label>
-            <div class="select-wrapper">
-              <select id="hand7">
-                <option value="B">Banker</option>
-                <option value="P">Player</option>
-                <option value="T">Tie</option>
-              </select>
+            <div class="hand-item">
+              <label for="hand6">Hand 6</label>
+              <div class="select-wrapper">
+                <select id="hand6">
+                  <option value="B">Banker</option>
+                  <option value="P">Player</option>
+                  <option value="T">Tie</option>
+                </select>
+              </div>
             </div>
-          </div>
-          <div class="hand-item">
-            <label for="hand8">Hand 8</label>
-            <div class="select-wrapper">
-              <select id="hand8">
-                <option value="B">Banker</option>
-                <option value="P">Player</option>
-                <option value="T">Tie</option>
-              </select>
+            <div class="hand-item">
+              <label for="hand7">Hand 7</label>
+              <div class="select-wrapper">
+                <select id="hand7">
+                  <option value="B">Banker</option>
+                  <option value="P">Player</option>
+                  <option value="T">Tie</option>
+                </select>
+              </div>
             </div>
-          </div>
-          <div class="hand-item">
-            <label for="hand9">Hand 9</label>
-            <div class="select-wrapper">
-              <select id="hand9">
-                <option value="B">Banker</option>
-                <option value="P">Player</option>
-                <option value="T">Tie</option>
-              </select>
+            <div class="hand-item">
+              <label for="hand8">Hand 8</label>
+              <div class="select-wrapper">
+                <select id="hand8">
+                  <option value="B">Banker</option>
+                  <option value="P">Player</option>
+                  <option value="T">Tie</option>
+                </select>
+              </div>
             </div>
-          </div>
-          <div class="hand-item">
-            <label for="hand10">Hand 10</label>
-            <div class="select-wrapper">
-              <select id="hand10">
-                <option value="B">Banker</option>
-                <option value="P">Player</option>
-                <option value="T">Tie</option>
-              </select>
+            <div class="hand-item">
+              <label for="hand9">Hand 9</label>
+              <div class="select-wrapper">
+                <select id="hand9">
+                  <option value="B">Banker</option>
+                  <option value="P">Player</option>
+                  <option value="T">Tie</option>
+                </select>
+              </div>
+            </div>
+            <div class="hand-item">
+              <label for="hand10">Hand 10</label>
+              <div class="select-wrapper">
+                <select id="hand10">
+                  <option value="B">Banker</option>
+                  <option value="P">Player</option>
+                  <option value="T">Tie</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Analyze Button -->
-      <button class="btn-analyze" id="analyzeBtn">🔍 Analyze &amp; Suggest Bet</button>
+        <!-- Start Live Play Button -->
+        <button class="btn-analyze" id="analyzeBtn">🎮 Analyze &amp; Start Live Play</button>
 
-      <!-- Results Panel (hidden until analysis runs) -->
-      <div id="resultsPanel" style="margin-top: 24px;"></div>
+      </section><!-- #setup-phase -->
+
+      <!-- ================================================================
+           PHASE 2 — Live Play Mode (shown after setup)
+           ================================================================ -->
+      <section id="live-play" style="display:none;">
+
+        <!-- Header bar -->
+        <div class="live-play-header">
+          <span>🎮</span>
+          <h2 id="liveHandTitle">Live Play Mode — Hand #11</h2>
+        </div>
+
+        <!-- AI Prediction Card -->
+        <div class="prediction-card card" id="predictionCard">
+          <!-- Filled dynamically by app.js -->
+        </div>
+
+        <!-- Result Entry — "What happened?" -->
+        <div class="card result-entry">
+          <h3>What happened?</h3>
+          <div class="result-btns">
+            <button class="result-btn banker-btn" id="btnBanker">🏦 Banker</button>
+            <button class="result-btn player-btn" id="btnPlayer">👤 Player</button>
+            <button class="result-btn tie-btn"    id="btnTie">🤝 Tie</button>
+          </div>
+        </div>
+
+        <!-- Consecutive Loss Warning (shown when consecutiveLosses >= 4) -->
+        <div class="loss-warning" id="lossWarning" style="display:none;"></div>
+
+        <!-- STOP Banner (shown when shoeActive = false) -->
+        <div class="stop-banner" id="stopBanner" style="display:none;">
+          <div class="stop-banner-inner">
+            <h2>🛑 STOP PLAY</h2>
+            <p>7 consecutive losses reached. The shoe has turned against you.</p>
+            <div class="stop-actions">
+              <button class="btn-new-shoe" id="btnNewShoe2">🔄 Start New Shoe</button>
+              <button class="btn-full-reset" id="btnFullReset2">🗑️ Full Reset</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Scoreboard -->
+        <div class="card">
+          <h2>📋 Live Scoreboard</h2>
+          <div class="scoreboard-wrap">
+            <table class="scoreboard">
+              <thead>
+                <tr>
+                  <th>Hand</th>
+                  <th>Predicted</th>
+                  <th>Actual</th>
+                  <th>Result</th>
+                  <th>Bet</th>
+                </tr>
+              </thead>
+              <tbody id="scoreboardBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar" id="statsBar">
+          <span class="stat-badge">Hands: <strong id="statHands">0</strong></span>
+          <span class="stat-badge wins">Wins: <strong id="statWins">0</strong></span>
+          <span class="stat-badge losses">Losses: <strong id="statLosses">0</strong></span>
+          <span class="stat-badge pushes">Pushes: <strong id="statPushes">0</strong></span>
+          <span class="stat-badge accuracy">Accuracy: <strong id="statAccuracy">0%</strong></span>
+          <span class="stat-badge consec">Consecutive Losses: <strong id="statConsec">0/7</strong></span>
+        </div>
+
+        <!-- Bottom Controls -->
+        <div class="live-play-controls">
+          <button class="btn-new-shoe" id="btnNewShoe">🔄 New Shoe</button>
+          <button class="btn-full-reset" id="btnFullReset">🗑️ Full Reset</button>
+        </div>
+
+      </section><!-- #live-play -->
+
     </div>
 
     <!-- Footer -->
@@ -169,5 +266,15 @@
 
     <!-- ES module entry point -->
     <script type="module" src="app.js"></script>
+
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./service_worker.js')
+            .then(reg => console.log('SW registered:', reg.scope))
+            .catch(err => console.error('SW registration failed:', err));
+        });
+      }
+    </script>
   </body>
 </html>

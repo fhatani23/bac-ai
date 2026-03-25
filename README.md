@@ -8,7 +8,9 @@ An **AI-powered Baccarat Betting Suggestion System** that analyzes the last 10 h
 
 1. Clone or download this repository.
 2. Open `index.html` in any modern web browser.
-3. Select your base unit, choose a money management strategy, enter the last 10 hand results, and click **Analyze & Suggest Bet**.
+3. Select your base unit and money management strategy.
+4. Enter the results of your last 10 hands, then click **Analyze & Start Live Play**.
+5. The app enters **Live Play Mode** — enter each new hand result as you play.
 
 ---
 
@@ -16,10 +18,11 @@ An **AI-powered Baccarat Betting Suggestion System** that analyzes the last 10 h
 
 ```
 bac-ai/
-├── index.html            # UI — 10-hand input, strategy selector, results panel
+├── index.html            # UI — 10-hand setup, live play panel, scoreboard
 ├── style.css             # Dark casino-themed responsive design
-├── app.js                # Main app logic — reads inputs, calls engine & strategy
+├── app.js                # Main app logic — setup, live play event handling
 ├── ai_engine.js          # AI pattern recognition (streaks, chops, recency weighting)
+├── session_manager.js    # Live Play session state — predictions, loss tracking, stats
 ├── paroli.js             # Paroli money management strategy
 ├── martingale.js         # Martingale money management strategy
 ├── fibonacci.js          # Fibonacci money management strategy
@@ -56,6 +59,79 @@ All strategies are **Banker-only** — they affect only bet *sizing*, not which 
 
 ---
 
+## 🎮 Live Play Mode
+
+### Phase 1 — Setup
+
+Enter the results of your last 10 hands (Banker / Player / Tie) and choose a base unit and strategy, then click **Analyze & Start Live Play**. These 10 hands seed the AI's rolling window and establish your starting money management state.
+
+### Phase 2 — Live Play
+
+After setup, the app enters a continuous **hand-by-hand prediction loop**:
+
+1. **AI Prediction Card** — the app predicts the next result (always Banker) and displays the bet size from your chosen strategy, the confidence percentage, and the detected pattern.
+2. **Enter the actual result** — click **🏦 Banker**, **👤 Player**, or **🤝 Tie** to record what happened.
+3. **Outcome evaluation** — the app checks whether the prediction was correct:
+   - **Banker wins** → ✅ WIN — consecutive loss counter resets.
+   - **Player wins** → ❌ LOSS — consecutive loss counter increments.
+   - **Tie** → ➖ PUSH — no effect on the win/loss counter.
+4. The **rolling window** shifts: the most recent 10 hands (including the one just played) are used for the next prediction.
+5. Repeat until the shoe ends or you choose to stop.
+
+### The 7-Consecutive-Loss Rule
+
+If the app records **7 consecutive Player wins** (7 losses for our Banker bets), it triggers a **🛑 STOP PLAY** banner and disables further input. This is a built-in risk management guard — a run of 7 straight losses is a strong signal that the shoe has turned against the strategy.
+
+At that point you can:
+- **🔄 New Shoe** — reset the consecutive loss counter and continue in the same session (hands history is preserved so the rolling window stays accurate).
+- **🗑️ Full Reset** — clear everything and return to the Phase 1 setup screen.
+
+### Warning Levels
+
+The app shows a warning bar as consecutive losses build up:
+
+| Consecutive Losses | Colour | Message |
+|---|---|---|
+| 0–3 | — | Hidden |
+| 4 | 🟡 Yellow | Caution — monitor closely |
+| 5–6 | 🟠 Orange | Consider pausing |
+| 7 | 🔴 Red | STOP PLAY banner shown |
+
+### Rolling 10-Hand Window
+
+Every prediction uses only the **most recent 10 hands**, not the initial 10 hands forever. As you play more hands, older hands drop out of the window and new ones enter. This means the AI adapts in real time to the current state of the shoe.
+
+### Scoreboard & Stats
+
+The **Live Scoreboard** table records every hand with the hand number, predicted outcome (always B), actual result, win/loss/push indicator, and bet amount.
+
+The **Stats Bar** shows running totals:
+- **Hands Played** — total live-play hands entered (including ties)
+- **Wins / Losses / Pushes** — breakdown of outcomes
+- **Accuracy** — wins ÷ (wins + losses), ties excluded
+- **Consecutive Losses** — current streak / 7 maximum
+
+---
+
 ## ⚠️ Disclaimer
 
 No betting system overcomes the house edge. This tool is for **educational and entertainment purposes only**. Always gamble responsibly.
+
+---
+
+## 📱 Installing on iOS (Add to Home Screen)
+
+This app is a **Progressive Web App (PWA)** — it can be installed on iPhone/iPad and run like a native app with no App Store required.
+
+### Steps:
+1. **Host the app** — enable GitHub Pages in your repo settings (Settings → Pages → Branch: main)
+2. **Open in Safari** on your iPhone/iPad — go to `https://YOUR_USERNAME.github.io/bac-ai/`
+3. **Tap the Share button** (box with arrow pointing up)
+4. **Tap "Add to Home Screen"**
+5. **Tap "Add"** — the app icon will appear on your home screen
+6. **Launch** — opens full-screen, works offline after first load
+
+### Notes:
+- Must be opened in **Safari** (not Chrome or Firefox) for Add to Home Screen to work on iOS
+- The app caches all files on first load, so it works offline afterwards
+- Replace `icons/icon-192.png` and `icons/icon-512.png` with custom icons if desired (open `icons/generate_icons.html` in a browser to create them)
