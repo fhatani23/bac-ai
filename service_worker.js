@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bac-ai-v1';
+const CACHE_NAME = 'bac-ai-v2';
 
 const ASSETS = [
   './',

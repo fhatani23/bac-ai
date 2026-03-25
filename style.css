@@ -173,7 +173,7 @@ select:focus {
   font-size: 0.8rem;
 }
 
-/* ── Hand Strip (tap-button input) ── */
+/* ── Big Road Grid (tap-to-cycle hand input) ── */
 
 .hand-hint {
   color: var(--text-muted);
@@ -181,91 +181,78 @@ select:focus {
   margin-bottom: 14px;
 }
 
-.hand-strip {
+.big-road-grid {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 6px;
+}
+
+@media (max-width: 480px) {
+  .big-road-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+.road-cell {
+  position: relative;
+  aspect-ratio: 1;
+  min-height: 44px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-}
-
-.hand-row {
-  display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
+  justify-content: center;
   border-radius: 8px;
-  border: 1px solid transparent;
-  transition: border-color 0.2s, background 0.2s;
-}
-
-/* Next hand to fill — subtle gold glow */
-.hand-row.current {
-  border-color: var(--gold);
-  background: rgba(212, 175, 55, 0.06);
-}
-
-/* Already filled */
-.hand-row.filled {
-  border-color: rgba(255,255,255,0.08);
-}
-
-.hand-label {
-  width: 54px;
-  font-size: 0.82rem;
-  color: var(--text-muted);
-  flex-shrink: 0;
-}
-
-.hand-btns {
-  display: flex;
-  gap: 8px;
-  flex: 1;
-}
-
-.hand-btn {
-  flex: 1;
-  padding: 10px 0;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 700;
-  border: 2px solid transparent;
-  background: rgba(255,255,255,0.05);
-  color: var(--text-muted);
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
   cursor: pointer;
-  transition: all 0.15s ease;
-  letter-spacing: 0.5px;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+  overflow: hidden;
+  user-select: none;
 }
 
-.hand-btn:hover {
-  background: rgba(255,255,255,0.1);
+.road-cell:hover {
+  background: rgba(255,255,255,0.08);
+}
+
+/* Current (next to fill) — gold glow */
+.road-cell.current {
+  border: 2px solid var(--gold);
+  box-shadow: 0 0 8px rgba(212,175,55,0.5);
+}
+
+/* Filled states */
+.road-cell.banker {
+  background: #c62828;
+  border-color: #c62828;
+}
+
+.road-cell.player {
+  background: #1565c0;
+  border-color: #1565c0;
+}
+
+.road-cell.tie {
+  background: #2e7d32;
+  border-color: #2e7d32;
+}
+
+.cell-value {
+  font-size: 1.2rem;
+  font-weight: 700;
   color: #fff;
+  line-height: 1;
 }
 
-/* Active (selected) states */
-.hand-btn.banker-btn.active {
-  background: rgba(212, 175, 55, 0.2);
-  border-color: var(--gold);
-  color: var(--gold);
+.cell-num {
+  font-size: 0.6rem;
+  color: rgba(255,255,255,0.55);
+  margin-top: 2px;
+  line-height: 1;
 }
 
-.hand-btn.player-btn.active {
-  background: rgba(231, 76, 60, 0.2);
-  border-color: #e74c3c;
-  color: #e74c3c;
-}
-
-.hand-btn.tie-btn.active {
-  background: rgba(160, 160, 160, 0.2);
-  border-color: #aaa;
-  color: #ccc;
-}
-
-/* Override result-btn colour styles for hand-strip buttons (default = muted) */
-.hand-btn.banker-btn,
-.hand-btn.player-btn,
-.hand-btn.tie-btn {
-  background: rgba(255,255,255,0.05);
-  border-color: transparent;
-  color: var(--text-muted);
+/* When empty, mute the number */
+.road-cell:not(.banker):not(.player):not(.tie) .cell-num {
+  color: var(--text-dim, rgba(255,255,255,0.3));
 }
 
 /* --------------------------------------------------------------------------
