@@ -61,6 +61,87 @@ let btnNewShoe2, btnFullReset2;
 let session = null;
 
 // ---------------------------------------------------------------------------
+// Hand strip state (Phase 1 tap-button input)
+// ---------------------------------------------------------------------------
+const handSelections = new Array(10).fill(null); // null = unset
+
+function buildHandStrip() {
+  const strip = document.getElementById('handStrip');
+  strip.innerHTML = '';
+  for (let i = 1; i <= 10; i++) {
+    const row = document.createElement('div');
+    row.className = 'hand-row';
+    row.id = `handRow${i}`;
+    row.innerHTML = `
+      <span class="hand-label">Hand ${i}</span>
+      <div class="hand-btns">
+        <button class="hand-btn banker-btn" data-hand="${i}" data-val="B">B</button>
+        <button class="hand-btn player-btn" data-hand="${i}" data-val="P">P</button>
+        <button class="hand-btn tie-btn"    data-hand="${i}" data-val="T">T</button>
+      </div>
+    `;
+    strip.appendChild(row);
+  }
+
+  // Attach click handlers
+  strip.querySelectorAll('.hand-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const hand = btn.dataset.hand;
+      const val  = btn.dataset.val;
+      selectHand(hand, val);
+    });
+  });
+
+  // Highlight the first hand as "current"
+  markCurrentHand(1);
+}
+
+function selectHand(handNum, value) {
+  const idx = parseInt(handNum, 10) - 1;
+  handSelections[idx] = value;
+
+  // Update button highlight for this row
+  const row = document.getElementById(`handRow${handNum}`);
+  row.querySelectorAll('.hand-btn').forEach(b => b.classList.remove('active'));
+  row.querySelector(`[data-val="${value}"]`).classList.add('active');
+  row.classList.add('filled');
+
+  // Advance to next unfilled hand
+  const nextUnfilled = handSelections.findIndex(h => h === null);
+  if (nextUnfilled !== -1) {
+    markCurrentHand(nextUnfilled + 1);
+    // Smooth scroll to next hand on mobile
+    const nextRow = document.getElementById(`handRow${nextUnfilled + 1}`);
+    nextRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } else {
+    clearCurrentHand(); // all filled
+  }
+
+  updateAnalyzeButton();
+}
+
+function markCurrentHand(num) {
+  document.querySelectorAll('.hand-row').forEach(r => r.classList.remove('current'));
+  const row = document.getElementById(`handRow${num}`);
+  if (row) row.classList.add('current');
+}
+
+function clearCurrentHand() {
+  document.querySelectorAll('.hand-row').forEach(r => r.classList.remove('current'));
+}
+
+function updateAnalyzeButton() {
+  const filled = handSelections.filter(h => h !== null).length;
+  if (filled < 10) {
+    analyzeBtn.disabled = true;
+    analyzeBtn.textContent = `Select all 10 hands (${filled}/10 selected)`;
+  } else {
+    analyzeBtn.disabled = false;
+    analyzeBtn.textContent = '🎮 Analyze & Start Live Play';
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Bootstrap
 // ---------------------------------------------------------------------------
 document.addEventListener("DOMContentLoaded", () => {
@@ -91,6 +172,10 @@ document.addEventListener("DOMContentLoaded", () => {
   strategySelect.addEventListener("change", updateStrategyDescription);
   updateStrategyDescription();
 
+  // Build the tap-button hand strip and set initial button state
+  buildHandStrip();
+  updateAnalyzeButton();
+
   // Button handlers
   analyzeBtn.addEventListener("click", startLivePlay);
   btnBanker.addEventListener("click", () => handleResult("B"));
@@ -117,11 +202,9 @@ function updateStrategyDescription() {
  * the training hands, then switch to the live play UI.
  */
 function startLivePlay() {
-  // Collect the 10 hand values
-  const hands = [];
-  for (let i = 1; i <= 10; i++) {
-    hands.push(document.getElementById(`hand${i}`).value);
-  }
+  // Collect the 10 hand values — guard against incomplete selection
+  if (handSelections.some(h => h === null)) return;
+  const hands = [...handSelections];
 
   const baseUnit = parseFloat(baseUnitInput.value) || 10;
   const strategy = strategySelect.value;
@@ -363,10 +446,10 @@ function onFullReset() {
   document.getElementById("statAccuracy").textContent = "0%";
   document.getElementById("statConsec").textContent   = "0/7";
 
-  // Clear hand selectors back to default (Banker)
-  for (let i = 1; i <= 10; i++) {
-    document.getElementById(`hand${i}`).value = "B";
-  }
+  // Reset hand strip back to empty
+  handSelections.fill(null);
+  buildHandStrip();
+  updateAnalyzeButton();
 
   // Hide warnings and banners
   stopBanner.style.display = "none";
