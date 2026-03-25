@@ -173,6 +173,101 @@ select:focus {
   font-size: 0.8rem;
 }
 
+/* ── Hand Strip (tap-button input) ── */
+
+.hand-hint {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-bottom: 14px;
+}
+
+.hand-strip {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hand-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+/* Next hand to fill — subtle gold glow */
+.hand-row.current {
+  border-color: var(--gold);
+  background: rgba(212, 175, 55, 0.06);
+}
+
+/* Already filled */
+.hand-row.filled {
+  border-color: rgba(255,255,255,0.08);
+}
+
+.hand-label {
+  width: 54px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.hand-btns {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+}
+
+.hand-btn {
+  flex: 1;
+  padding: 10px 0;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  border: 2px solid transparent;
+  background: rgba(255,255,255,0.05);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  letter-spacing: 0.5px;
+}
+
+.hand-btn:hover {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+
+/* Active (selected) states */
+.hand-btn.banker-btn.active {
+  background: rgba(212, 175, 55, 0.2);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.hand-btn.player-btn.active {
+  background: rgba(231, 76, 60, 0.2);
+  border-color: #e74c3c;
+  color: #e74c3c;
+}
+
+.hand-btn.tie-btn.active {
+  background: rgba(160, 160, 160, 0.2);
+  border-color: #aaa;
+  color: #ccc;
+}
+
+/* Override result-btn colour styles for hand-strip buttons (default = muted) */
+.hand-btn.banker-btn,
+.hand-btn.player-btn,
+.hand-btn.tie-btn {
+  background: rgba(255,255,255,0.05);
+  border-color: transparent;
+  color: var(--text-muted);
+}
+
 /* --------------------------------------------------------------------------
    Analyze Button
    -------------------------------------------------------------------------- */
@@ -199,6 +294,15 @@ select:focus {
 
 .btn-analyze:active {
   transform: translateY(0);
+}
+
+/* Disabled state — shown while hands are being selected */
+.btn-analyze:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: linear-gradient(135deg, #555, #333);
+  transform: none;
+  box-shadow: none;
 }
 
 /* --------------------------------------------------------------------------
